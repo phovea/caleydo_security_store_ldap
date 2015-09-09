@@ -1,0 +1,43 @@
+{
+  "servers": [
+    {
+      "hostname": "${caleydo_security_store_ldap.hostname}",
+      "port": "${caleydo_security_store_ldap.port}",
+      "use_ssl": "${caleydo_security_store_ldap.use_ssl}"
+    }
+  ],
+  "hostname": null,
+  "port": 389,
+  "use_ssl": false,
+
+  "read_only": true,
+
+  "bind_direct_credentials": false,
+  "always_search_bind": false,
+  "base_dn": "",
+  "bind_user_dn": null,
+  "bind_user_password": null,
+
+  "fail_auth_on_multiple_found": false,
+
+  /*Prepended to the Base DN to limit scope when searching for Users/Groups.*/
+  "user_dn": "",
+  "group_dn": "",
+
+  "bind_authentifcation_type": "AUTH_SIMPLE",
+
+  /*Ldap Filters*/
+  "user": {
+    "search_scope": "SEARCH_SCOPE_SINGLE_LEVEL",
+    "object_filter": "(objectclass=person)",
+    "login_attr": "uid",
+    "rdn_attr": "uid",
+    "attributes": null
+  },
+  "group": {
+    "search_scope": "SEARCH_SCOPE_SINGLE_LEVEL",
+    "object_filter": "(objectclass=group)",
+    "members_attr": "uniqueMember",
+    "attributes": null
+  }
+}

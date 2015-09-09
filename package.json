@@ -1,0 +1,29 @@
+{
+  "name": "caleydo_security_store_ldap",
+  "version": "0.0.1",
+  "license" : "SEE LICENSE IN LICENSE",
+  "repository": "Caleydo/caleydo_security_store_ldap",
+  "dependencies": {
+  },
+  "peerDependencies": {
+    "caleydo_server": "*"
+  },
+  "caleydo": {
+    "plugins": {
+      "python": [
+        {
+          "type": "user_stores",
+          "file": "ldap"
+        }
+      ]
+    },
+    "dependencies": {
+      "python": {
+        "ldap3": ">=0.9.8.8"
+      }
+    }
+  },
+  "publishConfig": {
+    "registry": "http://registry.caleydo.org/"
+  }
+}
