@@ -1,5 +1,5 @@
-Caleydo Data HDF
+Caleydo Security Store LDAP
 =====================
 
-a data provider for files stored in the hierarchical data format
+a security store based on LDAP lookups using ldap3 library
 
