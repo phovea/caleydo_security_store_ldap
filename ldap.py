@@ -46,7 +46,7 @@ class LDAPStore(object):
     self._connection = None
 
     for server_c in self._config.servers:
-      server = ldap3.Server(server_c['host'],port=int(server_c['port']),use_ssl=bool(server_c.get('use_ssl',False)))
+      server = ldap3.Server(server_c['hostname'],port=int(server_c['port']),use_ssl=bool(server_c.get('use_ssl',False)))
       self._server_pool.add(server)
 
 

@@ -6,7 +6,7 @@
       "use_ssl": "${caleydo_security_store_ldap.use_ssl}"
     }
   ],
-  "hostname": null,
+  "hostname": "",
   "port": 389,
   "use_ssl": false,
 
