@@ -24,9 +24,11 @@ class LDAPUser(caleydo_server.security.User):
     self.info = info or {}
     self.groups = groups or []
 
+  @property
   def is_authenticated(self):
     return True
 
+  @property
   def is_active(self):
     return True
 
