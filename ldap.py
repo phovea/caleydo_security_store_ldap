@@ -6,12 +6,6 @@ import logging
 log = logging.getLogger(__name__)
 import ldap3
 
-def resolve_groups(name, primary_gid):
-  import grp
-  groups = [g.gr_name for g in grp.getgrall() if name in g.gr_mem]
-  groups.append(grp.getgrgid(primary_gid).gr_name)
-  return groups
-
 class LDAPUser(caleydo_server.security.User):
   """
   a simple unix user backend with the file permissions
@@ -118,12 +112,10 @@ class LDAPStore(object):
 
   def login(self, username, extra_fields={}):
     password = extra_fields['password']
-    if self._config.bind_direct_credentials:
+    method = self._config.method
+    if method == 'bind_direct':
       result = self._authenticate_direct_credentials(username, password)
-
-    elif not self._config.get('always_search_bind') and \
-            self._config.get('user.rdn_attr') == \
-            self._config.get('user.login_attr'):
+    elif method == 'bind_guess_cn':
       # Since the user's RDN is the same as the login field,
       # we can do a direct bind.
       result = self._authenticate_direct_bind(username, password)

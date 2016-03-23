@@ -6,38 +6,48 @@
       "use_ssl": "${caleydo_security_store_ldap.use_ssl}"
     }
   ],
+
+  /*server settings*/
   "hostname": "",
   "port": 389,
   "use_ssl": false,
-
   "read_only": true,
 
-  "bind_direct_credentials": false,
-  "always_search_bind": false,
-  "base_dn": "",
+ /*user name to login/bind at connection*/
   "bind_user_dn": null,
+  /*password to login/bind at connection*/
   "bind_user_password": null,
+  /*authentification type see LDAP3 connection authentification*/
+  "bind_authentifcation_type": "AUTH_SIMPLE",
 
+
+  //method to use: bind_direct, bind_guess_cn, search
+  //bind_direct: username/password is directly used no groups
+  //bind_guess_cn: the full cn is guessed and used to login and find ones groups
+  //search: search the user and try out to login
+  "method": "bind_guess_cn",
+
+  //related to search fail if multiple found
   "fail_auth_on_multiple_found": false,
 
   /*Prepended to the Base DN to limit scope when searching for Users/Groups.*/
+   /*default prefix for binding user*/
+  "base_dn": "",
   "user_dn": "",
   "group_dn": "",
-
-  "bind_authentifcation_type": "AUTH_SIMPLE",
 
   /*Ldap Filters*/
   "user": {
     "search_scope": "SEARCH_SCOPE_SINGLE_LEVEL",
-    "object_filter": "(objectclass=person)",
-    "login_attr": "uid",
-    "rdn_attr": "uid",
-    "attributes": null
+    "object_filter": "(objectClass=person)", //base filter for users
+    "login_attr": "dn", //name of the attribute for the username
+    "rdn_attr": "dn", //name of the attribure for the guessing the fully cn
+    "attributes": null //limit the number of attributes
   },
   "group": {
-    "search_scope": "SEARCH_SCOPE_SINGLE_LEVEL",
-    "object_filter": "(objectclass=group)",
-    "members_attr": "uniqueMember",
+    "search_scope": "SEARCH_SCOPE_SINGLE_LEVEL", //search scope: SUBTREE
+    "object_filter": "(objectClass=group)",
+    "members_attr": "member", //name of the attribute to check if a user is a member of a group
     "attributes": null
   }
 }
