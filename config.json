@@ -48,6 +48,7 @@
     "search_scope": "SEARCH_SCOPE_SINGLE_LEVEL", //search scope: SUBTREE
     "object_filter": "(objectClass=group)",
     "members_attr": "member", //name of the attribute to check if a user is a member of a group
-    "attributes": null
+    "attributes": null,
+    "match": null, //filter groups by dn
   }
 }

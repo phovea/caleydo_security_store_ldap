@@ -366,6 +366,12 @@ class LDAPStore(object):
       # We made a connection, so we need to kill it.
       connection.unbind()
 
+    match = self._config.get('group.match')
+    if match is not None:
+      import re
+      match = re.compile(match)
+      results = [ r for r in results if match.match(r['dn'])]
+
     return results
 
   def _get_user_info(self, dn, _connection=None):
