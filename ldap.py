@@ -10,10 +10,10 @@ class LDAPUser(caleydo_server.security.User):
   """
   a simple unix user backend with the file permissions
   """
-  def __init__(self, username, dn = None, info = None, groups = None):
+  def __init__(self, username, dn = None, info = None, groups = None, group_prop = 'dn'):
     super(LDAPUser, self).__init__(dn or username)
     self.name = username
-    self.roles = [ g['dn'] for g in groups] if groups else []
+    self.roles = [ g[group_prop] for g in groups] if groups else []
     self.dn = dn or username
     self.info = info or {}
     self.groups = groups or []
@@ -32,6 +32,9 @@ class LDAPStore(object):
   def __init__(self):
     import caleydo_server.config
     self._config = caleydo_server.config.view('caleydo_security_store_ldap')
+
+    #cached of logged in user objects
+    self._cache = dict()
 
     self._server_pool = ldap3.ServerPool(
         [],
@@ -99,9 +102,13 @@ class LDAPStore(object):
 
 
   def logout(self, user):
+    if self._config.cache:
+      del self._cache[user.id]
     pass
 
   def load(self, id):
+    if self._config.cache:
+      return self._cache.get(id, None)
     return self._refind_user(id)
 
   def load_from_key(self, api_key):
@@ -124,6 +131,8 @@ class LDAPStore(object):
       # so we can try bind with their password.
       result = self._authenticate_search_bind(username, password)
 
+    if result and self._config.cache:
+      self._cache[result.id] = result
     return result
 
   def _authenticate_direct_credentials(self, username, password):
@@ -191,7 +200,7 @@ class LDAPStore(object):
       user_info = self._get_user_info(dn=bind_user, _connection=connection)
       user_groups = self._get_user_groups(dn=bind_user, _connection=connection)
 
-      return LDAPUser(username, info=user_info, groups=user_groups, dn=bind_user)
+      return LDAPUser(username, info=user_info, groups=user_groups, dn=bind_user, group_prop=self._config.get('group.prop'))
     except ldap3.LDAPInvalidCredentialsResult as e:
       log.debug("Authentication was not successful for user '{0}'".format(username))
       return None
@@ -277,7 +286,7 @@ class LDAPStore(object):
           # Populate User Data
           user['attributes']['dn'] = user['dn']
           groups = self._get_user_groups(dn=user['dn'], _connection=connection)
-          user_obj = LDAPUser(username,dn=user['dn'],info=user['attributes'],groups=groups)
+          user_obj = LDAPUser(username,dn=user['dn'],info=user['attributes'],groups=groups, group_prop=self._config.get('group.prop','dn'))
           break
         except ldap3.LDAPInvalidCredentialsResult as e:
           log.debug("Authentication was not successful for user '{0}'".format(username))
@@ -305,7 +314,7 @@ class LDAPStore(object):
       ))
       infos = self._get_user_info(dn, _connection=connection)
       groups = self._get_user_groups(dn, _connection=connection)
-      return LDAPUser(infos['name'],dn=dn,info=infos,groups=groups)
+      return LDAPUser(infos['name'],dn=dn,info=infos,groups=groups, group_prop=self._config.get('group.prop','dn'))
     except Exception as e:
       log.error(e)
       return None

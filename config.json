@@ -26,6 +26,7 @@
   //bind_guess_cn: the full cn is guessed and used to login and find ones groups
   //search: search the user and try out to login
   "method": "bind_guess_cn",
+  "cache": false,
 
   //related to search fail if multiple found
   "fail_auth_on_multiple_found": false,
@@ -50,5 +51,6 @@
     "members_attr": "member", //name of the attribute to check if a user is a member of a group
     "attributes": null,
     "match": null, //filter groups by dn
+    "prop": "dn" //the attribute to represent this group
   }
 }
