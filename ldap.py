@@ -227,13 +227,7 @@ class LDAPStore(object):
         AuthenticationResponse
     """
 
-    bind_user = '{rdn}={username},{user_search_dn}'.format(
-      rdn=self._config.get('user.rdn_attr'),
-      username=username,
-      user_search_dn=self.full_user_search_dn,
-    )
-
-    connection = self._make_connection(bind_user, password)
+    connection = self._make_connection(username, password)
 
     try:
       connection.bind()
