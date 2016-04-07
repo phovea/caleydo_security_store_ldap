@@ -122,6 +122,8 @@ class LDAPStore(object):
     method = self._config.method
     if method == 'bind_direct':
       result = self._authenticate_direct_credentials(username, password)
+    elif method == 'bind_direct_and_search':
+      result = self._authenticate_direct_bind_and_search(username, password)
     elif method == 'bind_guess_cn':
       # Since the user's RDN is the same as the login field,
       # we can do a direct bind.
@@ -205,6 +207,79 @@ class LDAPStore(object):
       log.debug("Authentication was not successful for user '{0}'".format(username))
       return None
     except Exception as e:
+      log.error(e)
+      return None
+    finally:
+      connection.unbind()
+
+  def _authenticate_direct_bind_and_search(self, username, password):
+    """
+    Performs a direct bind. We can do this since the RDN is the same
+    as the login attribute. Hence we just string together a dn to find
+    this user with.
+
+    Args:
+        username (str): Username of the user to bind (the field specified
+            as LDAP_BIND_RDN_ATTR)
+        password (str): User's password to bind with.
+
+    Returns:
+        AuthenticationResponse
+    """
+
+    bind_user = '{rdn}={username},{user_search_dn}'.format(
+      rdn=self._config.get('user.rdn_attr'),
+      username=username,
+      user_search_dn=self.full_user_search_dn,
+    )
+
+    connection = self._make_connection(bind_user, password)
+
+    try:
+      connection.bind()
+      log.debug("Authentication was successful for user '{0}'".format(username))
+
+      # Get user info here.
+      # Find the user in the search path.
+      user_filter = '({search_attr}={username})'.format(
+        search_attr=self._config.get('user.login_attr'),
+        username=username
+      )
+      search_filter = '(&{0}{1})'.format(
+        self._config.get('user.object_filter'),
+        user_filter,
+      )
+
+      log.debug("Performing an LDAP Search using filter '{0}', base '{1}', " \
+                "and scope '{2}'".format(
+        search_filter,
+        self.full_user_search_dn,
+        self._config.get('user.search_scope')
+      ))
+
+      connection.search(
+        search_base=self.full_user_search_dn,
+        search_filter=search_filter,
+        search_scope=getattr(ldap3, self._config.get('user.search_scope')),
+        attributes=self._config.get('user.attributes') or ldap3.ALL_ATTRIBUTES
+      )
+
+      if len(connection.response) > 0:
+        user_info = connection.response[0]['attributes']
+        user_info['dn'] = connection.response[0]['dn']
+        bind_user = user_info['dn']
+      else:
+        raise Exception
+
+      user_groups = self._get_user_groups(dn=bind_user, _connection=connection)
+
+      return LDAPUser(username, info=user_info, groups=user_groups, dn=bind_user,
+                      group_prop=self._config.get('group.prop'))
+    except ldap3.LDAPInvalidCredentialsResult as e:
+      log.debug("Authentication was not successful for user '{0}'".format(username))
+      return None
+    except Exception as e:
+      log.debug("Can't find user '{0}' full dn".format(username))
       log.error(e)
       return None
     finally:
