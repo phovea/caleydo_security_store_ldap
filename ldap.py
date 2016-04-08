@@ -3,7 +3,7 @@ __author__ = 'Samuel Gratzl'
 import caleydo_server.security
 
 import logging
-log = logging.getLogger('caleydo_security_store_ldap.'+__name__)
+log = logging.getLogger(__name__)
 import ldap3
 
 class LDAPUser(caleydo_server.security.User):
