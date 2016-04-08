@@ -3,7 +3,7 @@ __author__ = 'Samuel Gratzl'
 import caleydo_server.security
 
 import logging
-log = logging.getLogger(__name__)
+log = logging.getLogger('caleydo_security_store_ldap.'+__name__)
 import ldap3
 
 class LDAPUser(caleydo_server.security.User):
@@ -102,7 +102,7 @@ class LDAPStore(object):
 
 
   def logout(self, user):
-    if self._config.cache:
+    if self._config.cache and hasattr(user, 'id'):
       del self._cache[user.id]
     pass
 
