@@ -1,5 +1,6 @@
 {
   "name": "caleydo_security_store_ldap",
+  "description": "Security store implementation based LDAP",
   "version": "0.0.1",
   "license" : "SEE LICENSE IN LICENSE",
   "repository": "Caleydo/caleydo_security_store_ldap",
@@ -9,6 +10,8 @@
     "caleydo_server": "*"
   },
   "caleydo": {
+    "type": "plugin",
+    "category": "python_security",
     "plugins": {
       "python": [
         {
