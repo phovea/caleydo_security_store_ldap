@@ -22,7 +22,7 @@
     },
     "dependencies": {
       "python": {
-        "ldap3": "==0.9.9"
+        "ldap3": "==1.4.0"
       }
     }
   },
