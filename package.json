@@ -1,32 +1,36 @@
 {
-  "name": "caleydo_security_store_ldap",
+  "files": [
+    "phovea_security_store_ldap",
+    "__init__.py",
+    "__main__.py",
+    "build",
+    "requirements.txt",
+    "requirements_dev.txt",
+    "debian_packages.txt",
+    "redhat_packages.txt"
+  ],
+  "scripts": {
+    "check": "flake8",
+    "pretest": "npm run check",
+    "test": "python setup.py test",
+    "predist": "npm run test",
+    "dist": "python setup.py bdist_egg"
+  },
+  "name": "phovea_security_store_ldap",
   "description": "Security store implementation based LDAP",
-  "version": "0.0.1",
-  "license" : "SEE LICENSE IN LICENSE",
-  "repository": "Caleydo/caleydo_security_store_ldap",
-  "dependencies": {
+  "homepage": "https://phovea.caleydo.org",
+  "version": "0.0.1-SNAPSHOT",
+  "author": {
+    "name": "The Caleydo Team",
+    "email": "contact@caleydo.org",
+    "url": "https://caleydo.org"
   },
-  "peerDependencies": {
-    "caleydo_server": "*"
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/phovea/phovea_security_store_ldap/issues"
   },
-  "caleydo": {
-    "type": "plugin",
-    "category": "python_security",
-    "plugins": {
-      "python": [
-        {
-          "type": "user_stores",
-          "file": "ldap"
-        }
-      ]
-    },
-    "dependencies": {
-      "python": {
-        "ldap3": "==1.4.0"
-      }
-    }
-  },
-  "publishConfig": {
-    "registry": "http://registry.caleydo.org/"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/phovea/phovea_security_store_ldap.git"
   }
 }

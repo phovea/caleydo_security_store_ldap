@@ -1,0 +1,29 @@
+{
+  "generator-phovea": {
+    "type": "slib",
+    "name": "phovea_security_store_ldap",
+    "author": "The Caleydo Team",
+    "githubAccount": "phovea",
+    "modules": [
+      "phovea_server"
+    ],
+    "extensions": [],
+    "sextensions": [
+      {
+        "type": "user_stores",
+        "id": "phovea_security_store_ldap",
+        "module": "ldap",
+        "extras": {}
+      }
+    ],
+    "libraries": [],
+    "unknown": {
+      "requirements": [
+        "ldap3==1.4.0"
+      ],
+      "debianPackages": [],
+      "redhatPackages": []
+    },
+    "today": "Mon, 21 Nov 2016 09:45:25 GMT"
+  }
+}
