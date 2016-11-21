@@ -173,7 +173,7 @@ class LDAPStore(object):
       log.debug('Authentication was not successful for user "{0}"'.format(username))
       return None
     except Exception as e:
-      log.error(e)
+      log.exception('unknown exception')
       return None
     finally:
       connection.unbind()
@@ -216,7 +216,7 @@ class LDAPStore(object):
       log.debug('Authentication was not successful for user "{0}"'.format(username))
       return None
     except Exception as e:
-      log.error(e)
+      log.exception('unknown exception')
       return None
     finally:
       connection.unbind()
@@ -291,8 +291,7 @@ class LDAPStore(object):
       log.debug('Authentication was not successful for user "{0}"'.format(username))
       return None
     except Exception as e:
-      log.debug('Cannot find user "{0}" full dn'.format(username))
-      log.error(e)
+      log.exception('Cannot find user "{0}" full dn'.format(username))
       return None
     finally:
       connection.unbind()
@@ -325,7 +324,7 @@ class LDAPStore(object):
       ))
     except Exception as e:
       connection.unbind()
-      log.error(e)
+      log.exception()
       return None
 
     # Find the user in the search path.
@@ -381,7 +380,7 @@ class LDAPStore(object):
         except Exception as e:  # pragma: no cover
           # This should never happen, however in case ldap3 does ever throw an error here,
           # we catch it and log it
-          log.error(e)
+          log.exception()
         finally:
           user_connection.unbind()
 
@@ -403,7 +402,7 @@ class LDAPStore(object):
       groups = self._get_user_groups(dn, _connection=connection)
       return LDAPUser(infos['name'], dn=dn, info=infos, groups=groups, group_prop=self._config.get('group.prop', 'dn'))
     except Exception as e:
-      log.error(e)
+      log.exception()
       return None
     finally:
       connection.unbind()
