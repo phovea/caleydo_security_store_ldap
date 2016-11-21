@@ -16,10 +16,13 @@ class LDAPUser(caleydo_server.security.User):
   def __init__(self, username, dn=None, info=None, groups=None, group_prop='dn'):
     super(LDAPUser, self).__init__(dn or username)
     self.name = username
-    self.roles = [g[group_prop] for g in groups] if groups else []
+    self.groups = groups or []
+    if group_prop is not None:
+      self.roles = [g[group_prop] for g in self.groups]
+    else:
+      self.roles = self.groups
     self.dn = dn or username
     self.info = info or {}
-    self.groups = groups or []
 
   @property
   def is_authenticated(self):
