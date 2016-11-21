@@ -117,7 +117,9 @@ class LDAPStore(object):
       return None
     return self.login(parts[0], dict(password=parts[1]))
 
-  def login(self, username, extra_fields={}):
+  def login(self, username, extra_fields=None):
+    if extra_fields is None:
+      extra_fields = {}
     password = extra_fields['password']
     method = self._config.method
     if method == 'bind_direct':
@@ -159,10 +161,10 @@ class LDAPStore(object):
 
     try:
       connection.bind()
-      log.debug("Authentication was successful for user '{0}'".format(username))
+      log.debug('Authentication was successful for user "{0}"'.format(username))
       return LDAPUser(username)
     except ldap3.LDAPInvalidCredentialsResult as e:
-      log.debug("Authentication was not successful for user '{0}'".format(username))
+      log.debug('Authentication was not successful for user "{0}"'.format(username))
       return None
     except Exception as e:
       log.error(e)
@@ -195,7 +197,7 @@ class LDAPStore(object):
 
     try:
       connection.bind()
-      log.debug("Authentication was successful for user '{0}'".format(username))
+      log.debug('Authentication was successful for user "{0}"'.format(username))
 
       # Get user info here.
 
@@ -204,7 +206,7 @@ class LDAPStore(object):
 
       return LDAPUser(username, info=user_info, groups=user_groups, dn=bind_user, group_prop=self._config.get('group.prop'))
     except ldap3.LDAPInvalidCredentialsResult as e:
-      log.debug("Authentication was not successful for user '{0}'".format(username))
+      log.debug('Authentication was not successful for user "{0}"'.format(username))
       return None
     except Exception as e:
       log.error(e)
@@ -231,7 +233,7 @@ class LDAPStore(object):
 
     try:
       connection.bind()
-      log.debug("Authentication was successful for user '{0}'".format(username))
+      log.debug('Authentication was successful for user "{0}"'.format(username))
 
       # Get user info here.
       # Find the user in the search path.
@@ -244,8 +246,8 @@ class LDAPStore(object):
         user_filter,
       )
 
-      log.debug("Performing an LDAP Search using filter '{0}', base '{1}', " \
-                "and scope '{2}'".format(
+      log.debug('Performing an LDAP Search using filter "{0}", base "{1}", ' \
+                'and scope "{2}"'.format(
         search_filter,
         self.full_user_search_dn,
         self._config.get('user.search_scope')
@@ -265,15 +267,18 @@ class LDAPStore(object):
       else:
         raise Exception
 
-      user_groups = self._get_user_groups(dn=bind_user, _connection=connection)
+      if len(connection.response) > 0 and 'memberOf' in connection.response[0]['attributes']:
+        user_groups = connection.response[0]['attributes'].get('memberOf', [])
+      else:
+        user_groups = self._get_user_groups(dn=bind_user, _connection=connection)
 
       return LDAPUser(username, info=user_info, groups=user_groups, dn=bind_user,
                       group_prop=self._config.get('group.prop'))
     except ldap3.LDAPInvalidCredentialsResult as e:
-      log.debug("Authentication was not successful for user '{0}'".format(username))
+      log.debug('Authentication was not successful for user "{0}"'.format(username))
       return None
     except Exception as e:
-      log.debug("Can't find user '{0}' full dn".format(username))
+      log.debug('Cannot find user "{0}" full dn'.format(username))
       log.error(e)
       return None
     finally:
@@ -337,7 +342,7 @@ class LDAPStore(object):
     if len(connection.response) == 0 or \
         (self._config.get('fail_auth_on_multiple_found') and len(connection.response) > 1):
       # Don't allow them to log in.
-      log.debug("Authentication was not successful for user '{0}'".format(username))
+      log.debug('Authentication was not successful for user "{0}"'.format(username))
     else:
       for user in connection.response:
         # Attempt to bind with each user we find until we can find
@@ -347,10 +352,10 @@ class LDAPStore(object):
           bind_password=password
         )
 
-        log.debug("Directly binding a connection to a server with user:'{0}'".format(user['dn']))
+        log.debug('Directly binding a connection to a server with user:"{0}"'.format(user['dn']))
         try:
           user_connection.bind()
-          log.debug("Authentication was successful for user '{0}'".format(username))
+          log.debug('Authentication was successful for user "{0}"'.format(username))
 
           # Populate User Data
           user['attributes']['dn'] = user['dn']
@@ -358,7 +363,7 @@ class LDAPStore(object):
           user_obj = LDAPUser(username,dn=user['dn'],info=user['attributes'],groups=groups, group_prop=self._config.get('group.prop','dn'))
           break
         except ldap3.LDAPInvalidCredentialsResult as e:
-          log.debug("Authentication was not successful for user '{0}'".format(username))
+          log.debug('Authentication was not successful for user "{0}"'.format(username))
         except Exception as e:  # pragma: no cover
           # This should never happen, however in case ldap3 does ever throw an error here,
           # we catch it and log it
