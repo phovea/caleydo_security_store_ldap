@@ -42,6 +42,7 @@
     "search_scope": "SEARCH_SCOPE_SINGLE_LEVEL",
     "object_filter": "(objectClass=person)", //base filter for users
     "login_attr": "dn", //name of the attribute for the username
+    "alternative_login_attr": null,
     "rdn_attr": "dn", //name of the attribure for the guessing the fully cn
     "attributes": null //limit the number of attributes
   },

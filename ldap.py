@@ -3,17 +3,20 @@ __author__ = 'Samuel Gratzl'
 import caleydo_server.security
 
 import logging
+
 log = logging.getLogger(__name__)
 import ldap3
+
 
 class LDAPUser(caleydo_server.security.User):
   """
   a simple unix user backend with the file permissions
   """
-  def __init__(self, username, dn = None, info = None, groups = None, group_prop = 'dn'):
+
+  def __init__(self, username, dn=None, info=None, groups=None, group_prop='dn'):
     super(LDAPUser, self).__init__(dn or username)
     self.name = username
-    self.roles = [ g[group_prop] for g in groups] if groups else []
+    self.roles = [g[group_prop] for g in groups] if groups else []
     self.dn = dn or username
     self.info = info or {}
     self.groups = groups or []
@@ -26,6 +29,7 @@ class LDAPUser(caleydo_server.security.User):
   def is_active(self):
     return True
 
+
 ## inspired by flask-ldap3-login https://github.com/nickw444/flask-ldap3-login
 
 class LDAPStore(object):
@@ -33,21 +37,21 @@ class LDAPStore(object):
     import caleydo_server.config
     self._config = caleydo_server.config.view('caleydo_security_store_ldap')
 
-    #cached of logged in user objects
+    # cached of logged in user objects
     self._cache = dict()
 
     self._server_pool = ldap3.ServerPool(
-        [],
-        ldap3.POOLING_STRATEGY_FIRST,
-        active=True,
-        exhaust=True
+      [],
+      ldap3.POOLING_STRATEGY_FIRST,
+      active=True,
+      exhaust=True
     )
     self._connection = None
 
     for server_c in self._config.servers:
-      server = ldap3.Server(server_c['hostname'],port=int(server_c['port']),use_ssl=bool(server_c.get('use_ssl',False)))
+      server = ldap3.Server(server_c['hostname'], port=int(server_c['port']),
+                            use_ssl=bool(server_c.get('use_ssl', False)))
       self._server_pool.add(server)
-
 
     import atexit
     atexit.register(self.__del__)
@@ -96,10 +100,9 @@ class LDAPStore(object):
   @property
   def connection(self):
     if self._connection is None:
-      self._connection = self._make_connection(self._config.bind_user_dn,self._config.bind_user_password)
+      self._connection = self._make_connection(self._config.bind_user_dn, self._config.bind_user_password)
       self._connection.bind()
     return self._connection
-
 
   def logout(self, user):
     if self._config.cache and hasattr(user, 'id'):
@@ -157,7 +160,7 @@ class LDAPStore(object):
         AuthenticationResponse
     """
 
-    connection = self._make_connection(bind_user=username,bind_password=password)
+    connection = self._make_connection(bind_user=username, bind_password=password)
 
     try:
       connection.bind()
@@ -193,7 +196,7 @@ class LDAPStore(object):
       user_search_dn=self.full_user_search_dn,
     )
 
-    connection = self._make_connection(bind_user,password)
+    connection = self._make_connection(bind_user, password)
 
     try:
       connection.bind()
@@ -204,7 +207,8 @@ class LDAPStore(object):
       user_info = self._get_user_info(dn=bind_user, _connection=connection)
       user_groups = self._get_user_groups(dn=bind_user, _connection=connection)
 
-      return LDAPUser(username, info=user_info, groups=user_groups, dn=bind_user, group_prop=self._config.get('group.prop'))
+      return LDAPUser(username, info=user_info, groups=user_groups, dn=bind_user,
+                      group_prop=self._config.get('group.prop'))
     except ldap3.LDAPInvalidCredentialsResult as e:
       log.debug('Authentication was not successful for user "{0}"'.format(username))
       return None
@@ -241,6 +245,12 @@ class LDAPStore(object):
         search_attr=self._config.get('user.login_attr'),
         username=username
       )
+      if self._config.get('user.alternative_login_attr') is not None:
+        user_filter = '(|{first}({search_attr}={username}))'.format(
+          first=user_filter,
+          search_attr=self._config.get('user.alternative_login_attr'),
+          username=username
+        )
       search_filter = '(&{0}{1})'.format(
         self._config.get('user.object_filter'),
         user_filter,
@@ -340,7 +350,7 @@ class LDAPStore(object):
     )
     user_obj = None
     if len(connection.response) == 0 or \
-        (self._config.get('fail_auth_on_multiple_found') and len(connection.response) > 1):
+      (self._config.get('fail_auth_on_multiple_found') and len(connection.response) > 1):
       # Don't allow them to log in.
       log.debug('Authentication was not successful for user "{0}"'.format(username))
     else:
@@ -360,7 +370,8 @@ class LDAPStore(object):
           # Populate User Data
           user['attributes']['dn'] = user['dn']
           groups = self._get_user_groups(dn=user['dn'], _connection=connection)
-          user_obj = LDAPUser(username,dn=user['dn'],info=user['attributes'],groups=groups, group_prop=self._config.get('group.prop','dn'))
+          user_obj = LDAPUser(username, dn=user['dn'], info=user['attributes'], groups=groups,
+                              group_prop=self._config.get('group.prop', 'dn'))
           break
         except ldap3.LDAPInvalidCredentialsResult as e:
           log.debug('Authentication was not successful for user "{0}"'.format(username))
@@ -373,7 +384,6 @@ class LDAPStore(object):
 
     connection.unbind()
     return user_obj
-
 
   def _refind_user(self, dn):
     connection = self._make_connection(
@@ -388,7 +398,7 @@ class LDAPStore(object):
       ))
       infos = self._get_user_info(dn, _connection=connection)
       groups = self._get_user_groups(dn, _connection=connection)
-      return LDAPUser(infos['name'],dn=dn,info=infos,groups=groups, group_prop=self._config.get('group.prop','dn'))
+      return LDAPUser(infos['name'], dn=dn, info=infos, groups=groups, group_prop=self._config.get('group.prop', 'dn'))
     except Exception as e:
       log.error(e)
       return None
@@ -453,7 +463,7 @@ class LDAPStore(object):
     if match is not None:
       import re
       match = re.compile(match)
-      results = [ r for r in results if match.match(r['dn'])]
+      results = [r for r in results if match.match(r['dn'])]
 
     return results
 
