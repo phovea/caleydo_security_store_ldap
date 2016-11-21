@@ -1,6 +1,6 @@
 __author__ = 'Samuel Gratzl'
 
-import caleydo_server.security
+import phovea_server.security
 
 import logging
 
@@ -8,7 +8,7 @@ log = logging.getLogger(__name__)
 import ldap3
 
 
-class LDAPUser(caleydo_server.security.User):
+class LDAPUser(phovea_server.security.User):
   """
   a simple unix user backend with the file permissions
   """
@@ -37,8 +37,8 @@ class LDAPUser(caleydo_server.security.User):
 
 class LDAPStore(object):
   def __init__(self):
-    import caleydo_server.config
-    self._config = caleydo_server.config.view('caleydo_security_store_ldap')
+    import phovea_server.config
+    self._config = phovea_server.config.view('phovea_security_store_ldap')
 
     # cached of logged in user objects
     self._cache = dict()
