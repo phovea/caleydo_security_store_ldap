@@ -1,9 +1,9 @@
 {
   "servers": [
     {
-      "hostname": "${caleydo_security_store_ldap.hostname}",
-      "port": "${caleydo_security_store_ldap.port}",
-      "use_ssl": "${caleydo_security_store_ldap.use_ssl}"
+      "hostname": "${phovea_security_store_ldap.hostname}",
+      "port": "${phovea_security_store_ldap.port}",
+      "use_ssl": "${phovea_security_store_ldap.use_ssl}"
     }
   ],
 
