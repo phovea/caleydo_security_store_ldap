@@ -19,6 +19,7 @@
   "bind_user_password": null,
   /*authentification type see LDAP3 connection authentification*/
   "bind_authentifcation_type": "AUTH_SIMPLE",
+  "default_NTLM_domain": "",
 
 
   //method to use: bind_direct, bind_guess_cn, search

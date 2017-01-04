@@ -78,6 +78,9 @@ class LDAPStore(object):
 
     authentication = ldap3.AUTH_ANONYMOUS
     if bind_user:
+      # preprend default domain if available
+      if self._config.bind_authentifcation_type == 'AUTH_NTLM' and '\\' not in bind_user and self._config.default_NTLM_domain != '':
+        bind_user = self._config.default_NTLM_domain + '\\' + bind_user
       authentication = getattr(ldap3, self._config.bind_authentifcation_type)
 
     log.debug('Opening connection with bind user "{0}"'.format(bind_user or 'Anonymous'))
