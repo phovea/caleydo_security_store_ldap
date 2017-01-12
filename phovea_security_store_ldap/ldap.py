@@ -5,20 +5,23 @@ import logging
 __author__ = 'Samuel Gratzl'
 log = logging.getLogger(__name__)
 
-def clean_up(username):
+
+def cleanup_name(username):
   if '\\' in username:
-    return username[''.index('\\')+1:]
+    return username[username.index('\\') + 1:]
+  if '@' in username:
+    return username[0:username.index('@')]
   return username
 
 
-class LDAPUser(phovea_server.security.User):
+class LDAPUser(caleydo_server.security.User):
   """
   a simple unix user backend with the file permissions
   """
 
   def __init__(self, username, dn=None, info=None, groups=None, group_prop='dn'):
     super(LDAPUser, self).__init__(dn or username)
-    self.name = clean_up(username)
+    self.name = cleanup_name(username)
     self.groups = groups or []
     if group_prop is not None:
       self.roles = [g[group_prop] for g in self.groups]
@@ -76,6 +79,9 @@ class LDAPStore(object):
 
     authentication = ldap3.AUTH_ANONYMOUS
     if bind_user:
+      # prepend default domain if available
+      if '\\' not in bind_user and '@' not in bind_user and self._config.default_netbios_domain != '':
+        bind_user = self._config.default_netbios_domain + '\\' + bind_user
       authentication = getattr(ldap3, self._config.bind_authentifcation_type)
 
     log.debug('Opening connection with bind user "{0}"'.format(bind_user or 'Anonymous'))
@@ -231,19 +237,36 @@ class LDAPStore(object):
       connection.bind()
       log.debug('Authentication was successful for user "{0}"'.format(username))
 
-      # Luckily there's an LDAP standard operation to help us out
-      my_user = connection.extend.standard.who_am_i()
-
-      my_user = re.sub('^u:\w+\\\\', '', my_user)
-      log.debug('re.sub: %r', my_user)
+      if self._config.get('use_who_am_i'):
+        # Luckily there's an LDAP standard operation to help us out
+        my_username = connection.extend.standard.who_am_i()
+        import re
+        my_username = re.sub('^u:\w+\\\\', '', my_username)
+        log.debug('re.sub: %r', my_username)
+      else:
+        my_username = username
 
       # Get user info here.
       # Find the user in the search path.
-      user_filter = '({0}={1})'.format(self._config.get('user.login_attr'), my_user)
-      log.debug('user_filter(before): %r', user_filter)
+      user_filter = '({search_attr}={username})'.format(
+        search_attr=self._config.get('user.login_attr'),
+        username=my_username
+      )
+      log.debug("user_filter(before): %r", user_filter)
+
       if self._config.get('user.alternative_login_attr') is not None:
-        user_filter = '(|{0}({1}={2}))'.format(user_filter, self._config.get('user.alternative_login_attr'), my_user)
-      log.debug('user_filter(after): %r', user_filter)
+        user_filter = '(|{first}({search_attr}={username}))'.format(
+          first=user_filter,
+          search_attr=self._config.get('user.alternative_login_attr'),
+          username=my_username
+        )
+        log.debug("user_filter(after): %r", user_filter)
+
+      search_filter = '(&{0}{1})'.format(
+        self._config.get('user.object_filter'),
+        user_filter,
+      )
+      log.debug("search_filter: %r", search_filter)
 
       search_filter = '(&{0}{1})'.format(self._config.get('user.object_filter'), user_filter)
       log.debug('search_filter: %r', search_filter)
@@ -268,7 +291,7 @@ class LDAPStore(object):
       else:
         user_groups = self._get_user_groups(dn=bind_user, _connection=connection)
 
-      return LDAPUser(username, info=user_info, groups=user_groups, dn=bind_user,
+      return LDAPUser(my_username, info=user_info, groups=user_groups, dn=bind_user,
                       group_prop=self._config.get('group.prop'))
     except ldap3.LDAPInvalidCredentialsResult:
       log.exception('Authentication was not successful for user "{0}"'.format(username))

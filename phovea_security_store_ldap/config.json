@@ -19,6 +19,9 @@
   "bind_user_password": null,
   /*authentification type see LDAP3 connection authentification*/
   "bind_authentifcation_type": "SIMPLE",
+  /**default netbios domain*/
+  "default_netbios_domain": "",
+  "use_who_am_i": true,
 
 
   //method to use: bind_direct, bind_guess_cn, search
