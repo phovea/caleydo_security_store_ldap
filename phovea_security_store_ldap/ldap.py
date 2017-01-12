@@ -5,6 +5,11 @@ import logging
 __author__ = 'Samuel Gratzl'
 log = logging.getLogger(__name__)
 
+def clean_up(username):
+  if '\\' in username:
+    return username[''.index('\\')+1:]
+  return username
+
 
 class LDAPUser(phovea_server.security.User):
   """
@@ -13,7 +18,7 @@ class LDAPUser(phovea_server.security.User):
 
   def __init__(self, username, dn=None, info=None, groups=None, group_prop='dn'):
     super(LDAPUser, self).__init__(dn or username)
-    self.name = username
+    self.name = clean_up(username)
     self.groups = groups or []
     if group_prop is not None:
       self.roles = [g[group_prop] for g in self.groups]
@@ -217,19 +222,31 @@ class LDAPStore(object):
     Returns:
         AuthenticationResponse
     """
+    import re
 
     connection = self._make_connection(username, password)
 
     try:
+      log.debug('start binding')
       connection.bind()
       log.debug('Authentication was successful for user "{0}"'.format(username))
 
+      # Luckily there's an LDAP standard operation to help us out
+      my_user = connection.extend.standard.who_am_i()
+
+      my_user = re.sub('^u:\w+\\\\', '', my_user)
+      log.debug('re.sub: %r', my_user)
+
       # Get user info here.
       # Find the user in the search path.
-      user_filter = '({0}={1})'.format(self._config.get('user.login_attr'), username)
+      user_filter = '({0}={1})'.format(self._config.get('user.login_attr'), my_user)
+      log.debug('user_filter(before): %r', user_filter)
       if self._config.get('user.alternative_login_attr') is not None:
-        user_filter = '(|{0}({1}={2}))'.format(user_filter, self._config.get('user.alternative_login_attr'), username)
+        user_filter = '(|{0}({1}={2}))'.format(user_filter, self._config.get('user.alternative_login_attr'), my_user)
+      log.debug('user_filter(after): %r', user_filter)
+
       search_filter = '(&{0}{1})'.format(self._config.get('user.object_filter'), user_filter)
+      log.debug('search_filter: %r', search_filter)
 
       log.debug('Performing an LDAP Search using filter "{0}", '
                 'base "{1}", and scope "{2}"'.format(search_filter, self.full_user_search_dn,
@@ -254,7 +271,7 @@ class LDAPStore(object):
       return LDAPUser(username, info=user_info, groups=user_groups, dn=bind_user,
                       group_prop=self._config.get('group.prop'))
     except ldap3.LDAPInvalidCredentialsResult:
-      log.debug('Authentication was not successful for user "{0}"'.format(username))
+      log.exception('Authentication was not successful for user "{0}"'.format(username))
       return None
     except:
       log.exception('Cannot find user "{0}" full dn'.format(username))
