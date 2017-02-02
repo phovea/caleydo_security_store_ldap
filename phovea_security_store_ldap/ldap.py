@@ -14,7 +14,7 @@ def cleanup_name(username):
   return username
 
 
-class LDAPUser(caleydo_server.security.User):
+class LDAPUser(phovea_server.security.User):
   """
   a simple unix user backend with the file permissions
   """
