@@ -1,27 +1,33 @@
 language: python
 sudo: required
 env:
-  - TOXENV=py27
-  - TOXENV=py34
-
+- TOXENV=py27
+- TOXENV=py34
 install:
-  - (!(test -f docker_packages.txt) || (cat docker_packages.txt | xargs sudo apt-get install -y))
-  - pip install -r requirements_dev.txt
-  - pip install -r requirements.txt
-
+- "(!(test -f docker_packages.txt) || (cat docker_packages.txt | xargs sudo apt-get
+  install -y))"
+- pip install -r requirements_dev.txt
+- pip install -r requirements.txt
 script: npm run dist
-
+notifications:
+  slack:
+    secure: 3pgC0GSWawHhluzNLEbM2yg9xeNhWpBdyAHsuOei7CWjpIR7Il1o/GsnKLan+eQ+85Jb1T1XlXVOEEn3he5QUmZZ4dyDZNChgxUW2m5i+hDVJawHePpIIn3Tk5Lv8VW5lk9MzySpgPwTtbUwkPiUnVoF7hRe8WAWB6Oq4JY66xC7yWPyVZRtqdPAYRCLR88quvwG1MFuuawRNQIucacqyfdV3V5RtzOTV6R13EoHJbU28EEby4psTn7cbZeppc2RXEpO4unjn/v/3RHZyjafL1m/MEXrg8krvWpTqvWgXHN4NeP2rn7XgtO7dRBaIbuJbyPusTL9vMrFTet1inNJBzlF2n7yXQg2TL77YMfM8Gm2v0WXADdskc7k58kxhfY9QXJgKkkZ35ewMOp216xbxjGKAK/uEp/eqwxsNIHFeCsdJynzDaZbNR+bagNc3KzxMBOtPvro16PmXGxajUwjAKTO4ACiN9mLpkciGI7NXJHvIK5gOagDbUPlbGO5KzaHOgSdN8+djXiT4RS0tso0iq3jP8zkbCG2Eop678vnX5ixlA3cbjrFo06JCGgJK6m5rMg5XKqOjzTuj4S4otnKJi2tmZiHkfm6BvimCScnV7mLjBqSmu5GKk4rdLdyZn99yZHPaTmoxUHG7MuphTka+9F6A6xoWU3vuEPv9bVzOT4=
+    on_success: change
+    on_failure: always
 deploy:
-  provider: releases
+- provider: releases
   api_key:
-    secure: TK9/P34Bi3WuppiDrBCwVcn41yCBwmILaU8hXTBzUPbT7TbeFIwsC6/4CtH85Z+ZrUve4S5pTmWRNf2dQDxWw3uYu7+bJuemV2J1LHG76mognj+TNEiYxfLQUt3Gql4W7C7FcI4Rlx5/uMN9wY1wro8TWUBMwT6jjSrUWIvK3GXoojd5bHvJx07XpjWl9wCon4D0ruZiFoM2mdeP23lbc2GckETi32oEKswnQXxkMACmxbPzoWbvkxH4aK8Bt2Rj2sl2TbPhVkN6DAkHGkGAvLI+2/aRfG27+oo3OKsaDjbuGABct8TfZccJ970CbQ8kbnCjYxstvqkg1JWjF0W67sX/flBZZOEUA5l0OLWo6HqMGMxm7/lEQhIdPMsRmvXL+HVOxkMrB2dda58QzxVwiZp+rRqUaeabPZp8Kl5xodGrVxsBvxe6zAbJ5jCtCSumG6+kLyKI00/kYlghqQNrgUw0ZsYJlQ34h3lo/24QpaeyDpQoCkGWQgtgqiXGpeKSu7bCnOqIqAy3nbT9Utwj7K8gIasTG5idosEAz/THMampNbGDuyxxc340sYGNMg9Bhm1g2ILWRdtV470p5hwBtIDTKi3/PAizEO26+Wh0zI47Sg3ao57avcbCsTmzbZUeA5J4bojmchhJCHX8su9cSCGh/2fJA/1eBIgEvOQ8LNE=
+    secure: IE4SZ8Be/n0K0kTCph4OdTzjcCDhiDhij7bY3ZICF+DZqeGvzRrV7huv96VWB+TA6/z6cSocIaVI5LbF7x5x8Cj/1XEwtWfydDp7QgfcJyVmAyLUowuI6/+HMKnIEiaMO11VJ18UkjpsRNwT1Y2kuJyLt9RZRMx9DLtKp34ac/Wgx1dRT9Eg0EiGBLivbgW8u4CCv4hAyFr80Cla6OT1pOgnzKD1ni5i3iy7kv1pB6n6QUs06RCfFfAhfQVDrkguq1YTCpDcqnid+xdhksQ4TF0O14YyS/WkkcA5mv/zHCSNUMVI1mWnMbS5S4UqmjXmrzHn5ezmvEXNnDZ8rbSM2As2TNjmCpYvtyybR6Gh2RCSqwyIY703rPvv//OCImRED3QElfTg31BcGStw2hNNbhkIxSZaed60UcJ3nRCM2t2551x7YAHQyzoSVqrw73g9n9UaHBafjtFv+pUDgxnaQ8DA/LG85HKuwGgww03Jmd+8c4PdJnlI4xJWSKTL8h3TpGxTs2IlpKCzYKcer9Tq+YBCQau2YQJMsofEGOyDVYjXH2wdX9tL+YU6KLwAKOAC3rqrjT+Kq9QaNRIHYQIBeV2u9SusXOCGozVseQmTHK+RkR0qM1IwBRz8Ayd+EKTyHFkagy7SG/GNcvXK3TXnlqz46P7hPb8xogCBJYTSmus=
   file_glob: true
   file: dist/phovea_security_store_ldap*.egg
   on:
     tags: true
-
-notifications:
-  slack:
-    secure: E8/1UIdHSczUbN+6i6gd1d5LM4vmLdwLQ30tpyjvnM0wvfDce76oPxLJAy240WJ5ybXRZUtNrttpVpt4tEXCy8aLFCmxD7s77rVloH+q1J8R/ptTFWZGhFGEujk1awEmVbzcWxJkV9/JENQaeGBKxwv8/EQwWwEkAb7p/+AJb9owmH88b3wUZUGHBWtbMiyyaF4Rm1Wg1stJB8Z1Ga7PRF4cqufTgcDdsCPVv9gAY+VxOIGqX/Vfuc9UWpUH8vq8lHUE7Inn5QS78kuFfSgLWga3H6Mu/Gko1XNlWk0QWWQBUvEZ6ZC6Wuo68KzvUjJHDTnx8WyfHue2JNHIslcX+eJq2WHLeEgM24VeNkILCGo/H/60NGHiSjrIv/Y9h6bQ9FDjo6TUyE4nbdPYN1RN9FQ5UbI9Y4Gi753H9mqnHWlEywBOzHxdZCAuz9Wh03CCF/blsvJ+Obbyo6Jrfe+g44jyi9kQdBNQ78qG6v4EXws8FiYao6x3PpgIwFix42Cpr+soAh5FpA3C1zHSAyZZpXF65/lrDl5yPNofK7Wy0B9bw+0I6Z/u7ZKFNVZXvYPGYvtUVcsALGBdmYc61+LCta36Po0KZseWVAlJj6QnOJDYzv0wvV/zsuf9A5KpYFGiqV9Q7zmtiO5FYF5sBy+lE7O9tHVO4O18IRndhRQgxhs=
-    on_success: change
-    on_failure: always
+    repo: phovea/phovea_security_store_ldap
+- provider: pypi
+  user: caleydo-bot
+  password:
+    secure: 4bUgbFH5J+vVgeZXx+d6D2wQbnRDyGTbBwdgd39qXMqE/OH4qLRBiLHsz9NcpToUyBkJJzigDbg0i2+TcPgY6oZPXtXRLTYmrnrxNAY747OoVpIJdFANwDg83wQLxQTJXQzgbtNk5/tSfdUgJyiFkehW9gOxGVlZXUea05wGoxAJBM2yD6yEGERYIvdtdsqSPAAav4ysR1diLwZD4ePgNQDVKs6PSlqIjU3xsZ6d/LulrL4OIbiwG3OEFDPYHtpkakPGGmH6Uaime6K764p9B2wRdk+Y10V22srPXFMRD8YeWG23yahtBRiko0wAKVzPGrGbvfdKYp0qsNrzl/433anW3KdwIEUGW8IdfqHV4DT0Xpcn7h8gGjSmJCbOy9/YECvwvu78wMGw9Rgijozb/o12sSYkvtaQvrnmrKpLQREJfeVNcJxY7GwH1prHWrKCyjpiEwdwQ6TJpBXTndByVoqTKopqtbQEeXsnI9cbpUBujMKBy+eAxyDWo9iZrwG3JzkQy55q+20jkdMtWvIIrP4aQ61dkE3WZzxVXToPsQjhhxmSQIwlJnvXrw3DXNlViGj/2wWjNbZlAc8WtB2PMlp2PypkKICXD9syBOC/og+791YwaMC7mhWQdAmWF/OQ8vBf449In34rXry8xFhF+RkqTRsOSf1VZxbyqZUAndE=
+  on:
+    tags: true
+    distributions: sdist bdist_wheel
+    repo: phovea/phovea_security_store_ldap
