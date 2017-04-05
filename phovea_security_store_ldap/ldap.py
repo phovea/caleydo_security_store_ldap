@@ -252,14 +252,10 @@ class LDAPStore(object):
       log.debug("user_filter(before): %r", user_filter)
 
       if self._config.get('user.alternative_login_attr') is not None:
-        user_filter = '(|{first}({search_attr}={username}))'.format(first=user_filter, search_attr=self._config.get(
-          'user.alternative_login_attr'), username=my_username)
+        user_filter = '(|{first}({search_attr}={username}))'.format(first=user_filter, search_attr=self._config.get('user.alternative_login_attr'), username=my_username)
         log.debug("user_filter(after): %r", user_filter)
 
-      search_filter = '(&{0}{1})'.format(
-        self._config.get('user.object_filter'),
-        user_filter,
-      )
+      search_filter = '(&{0}{1})'.format(self._config.get('user.object_filter'), user_filter)
       log.debug("search_filter: %r", search_filter)
 
       search_filter = '(&{0}{1})'.format(self._config.get('user.object_filter'), user_filter)
