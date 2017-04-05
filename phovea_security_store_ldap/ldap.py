@@ -240,7 +240,6 @@ class LDAPStore(object):
       if self._config.get('use_who_am_i'):
         # Luckily there's an LDAP standard operation to help us out
         my_username = connection.extend.standard.who_am_i()
-        import re
         my_username = re.sub('^u:\w+\\\\', '', my_username)
         log.debug('re.sub: %r', my_username)
       else:
@@ -248,18 +247,13 @@ class LDAPStore(object):
 
       # Get user info here.
       # Find the user in the search path.
-      user_filter = '({search_attr}={username})'.format(
-        search_attr=self._config.get('user.login_attr'),
-        username=my_username
-      )
+      user_filter = '({search_attr}={username})'.format(search_attr=self._config.get('user.login_attr'),
+                                                        username=my_username)
       log.debug("user_filter(before): %r", user_filter)
 
       if self._config.get('user.alternative_login_attr') is not None:
-        user_filter = '(|{first}({search_attr}={username}))'.format(
-          first=user_filter,
-          search_attr=self._config.get('user.alternative_login_attr'),
-          username=my_username
-        )
+        user_filter = '(|{first}({search_attr}={username}))'.format(first=user_filter, search_attr=self._config.get(
+          'user.alternative_login_attr'), username=my_username)
         log.debug("user_filter(after): %r", user_filter)
 
       search_filter = '(&{0}{1})'.format(
