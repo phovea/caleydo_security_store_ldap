@@ -14,15 +14,15 @@
     "pretest": "npm run check",
     "test": "test ! -d tests || python setup.py test",
     "predist": "npm run build && npm run docs",
-    "dist": "python setup.py bdist_egg",
-    "docs": "echo todo creating docs...",
+    "dist": "python setup.py bdist_egg && cd build && tar cvzf ../dist/phovea_security_store_ldap.tar.gz *",
+    "docs": "sphinx-apidoc -o docs -f ./phovea_security_store_ldap && sphinx-build ./docs build/docs",
     "prebuild": "node -e \"process.exit(process.env.PHOVEA_SKIP_TESTS === undefined?1:0)\" || npm run test",
-    "build": "python -c \"from distutils.dir_util import mkpath ; mkpath('./build/source')\" && (tar -c ./phovea_security_store_ldap --exclude '*.pyc' | tar -xC build/source)"
+    "build": "python build.py"
   },
   "name": "phovea_security_store_ldap",
   "description": "Security store implementation based LDAP",
   "homepage": "https://phovea.caleydo.org",
-  "version": "0.1.0-SNAPSHOT",
+  "version": "1.0.1",
   "author": {
     "name": "The Caleydo Team",
     "email": "contact@caleydo.org",
