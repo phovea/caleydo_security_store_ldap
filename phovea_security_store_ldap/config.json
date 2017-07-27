@@ -42,7 +42,7 @@
 
   /*Ldap Filters*/
   "user": {
-    "search_scope": "SEARCH_SCOPE_SINGLE_LEVEL",
+    "search_scope": "LEVEL",
     "object_filter": "(objectClass=person)", //base filter for users
     "login_attr": "dn", //name of the attribute for the username
     "alternative_login_attr": null,
@@ -50,7 +50,7 @@
     "attributes": null //limit the number of attributes
   },
   "group": {
-    "search_scope": "SEARCH_SCOPE_SINGLE_LEVEL", //search scope: SUBTREE
+    "search_scope": "LEVEL", //search scope: SUBTREE
     "object_filter": "(objectClass=group)",
     "members_attr": "member", //name of the attribute to check if a user is a member of a group
     "attributes": null,
