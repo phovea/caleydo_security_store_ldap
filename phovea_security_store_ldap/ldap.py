@@ -1,5 +1,6 @@
 import phovea_server.security
 import ldap3
+from ldap3.core.exceptions import LDAPInvalidCredentialsResult
 import logging
 
 __author__ = 'Samuel Gratzl'
@@ -50,7 +51,7 @@ class LDAPStore(object):
     # cached of logged in user objects
     self._cache = dict()
 
-    self._server_pool = ldap3.ServerPool([], ldap3.POOLING_STRATEGY_FIRST, active=True, exhaust=True)
+    self._server_pool = ldap3.ServerPool([], ldap3.FIRST, active=True, exhaust=True)
     self._connection = None
 
     for server_c in self._config.servers:
@@ -77,7 +78,7 @@ class LDAPStore(object):
             upon bind if you use this internal method.
     """
 
-    authentication = ldap3.AUTH_ANONYMOUS
+    authentication = ldap3.ANONYMOUS
     if bind_user:
       # prepend default domain if available
       if '\\' not in bind_user and '@' not in bind_user and self._config.default_netbios_domain != '':
@@ -86,7 +87,7 @@ class LDAPStore(object):
 
     log.debug('Opening connection with bind user "{0}"'.format(bind_user or 'Anonymous'))
     connection = ldap3.Connection(server=self._server_pool, read_only=self._config.read_only, user=bind_user,
-                                  password=bind_password, client_strategy=ldap3.STRATEGY_SYNC,
+                                  password=bind_password, client_strategy=ldap3.SYNC,
                                   authentication=authentication, check_names=True, raise_exceptions=True, **kwargs)
     return connection
 
@@ -165,7 +166,7 @@ class LDAPStore(object):
       connection.bind()
       log.debug('Authentication was successful for user "{0}"'.format(username))
       return LDAPUser(username)
-    except ldap3.LDAPInvalidCredentialsResult:
+    except LDAPInvalidCredentialsResult:
       log.debug('Authentication was not successful for user "{0}"'.format(username))
       return None
     except:
@@ -205,7 +206,7 @@ class LDAPStore(object):
 
       return LDAPUser(username, info=user_info, groups=user_groups, dn=bind_user,
                       group_prop=self._config.get('group.prop'))
-    except ldap3.LDAPInvalidCredentialsResult:
+    except LDAPInvalidCredentialsResult:
       log.debug('Authentication was not successful for user "{0}"'.format(username))
       return None
     except:
@@ -283,7 +284,7 @@ class LDAPStore(object):
 
       return LDAPUser(my_username, info=user_info, groups=user_groups, dn=bind_user,
                       group_prop=self._config.get('group.prop'))
-    except ldap3.LDAPInvalidCredentialsResult:
+    except LDAPInvalidCredentialsResult:
       log.exception('Authentication was not successful for user "{0}"'.format(username))
       return None
     except:
@@ -353,7 +354,7 @@ class LDAPStore(object):
           user_obj = LDAPUser(username, dn=user['dn'], info=user['attributes'], groups=groups,
                               group_prop=self._config.get('group.prop', 'dn'))
           break
-        except ldap3.LDAPInvalidCredentialsResult:
+        except LDAPInvalidCredentialsResult:
           log.exception('Authentication was not successful for user "{0}"'.format(username))
         except:  # pragma: no cover
           # This should never happen, however in case ldap3 does ever throw an error here,
