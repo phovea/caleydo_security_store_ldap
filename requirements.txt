@@ -1,2 +1,2 @@
-ldap3==1.4.0
+ldap3==2.2.3
 -e git+https://github.com/phovea/phovea_server.git@develop#egg=phovea_server
