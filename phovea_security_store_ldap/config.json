@@ -8,15 +8,15 @@
   ],
 
   /*server settings*/
-  "hostname": "",
+  "hostname": "ldap.forumsys.com",
   "port": 389,
   "use_ssl": false,
   "read_only": true,
 
  /*user name to login/bind at connection*/
-  "bind_user_dn": null,
+  "bind_user_dn": "cn=read-only-admin,dc=example,dc=com",
   /*password to login/bind at connection*/
-  "bind_user_password": null,
+  "bind_user_password": "password",
   /*authentification type see LDAP3 connection authentification*/
   "bind_authentifcation_type": "SIMPLE",
   /**default netbios domain*/
@@ -36,25 +36,25 @@
 
   /*Prepended to the Base DN to limit scope when searching for Users/Groups.*/
    /*default prefix for binding user*/
-  "base_dn": "",
+  "base_dn": "dc=example,dc=com",
   "user_dn": "",
   "group_dn": "",
 
   /*Ldap Filters*/
   "user": {
-    "search_scope": "LEVEL",
+    "search_scope": "SUBTREE",
     "object_filter": "(objectClass=person)", //base filter for users
     "login_attr": "dn", //name of the attribute for the username
     "alternative_login_attr": null,
-    "rdn_attr": "dn", //name of the attribure for the guessing the fully cn
+    "rdn_attr": "uid", //name of the attribure for the guessing the fully cn
     "attributes": null //limit the number of attributes
   },
   "group": {
-    "search_scope": "LEVEL", //search scope: SUBTREE
-    "object_filter": "(objectClass=group)",
-    "members_attr": "member", //name of the attribute to check if a user is a member of a group
+    "search_scope": "SUBTREE", //search scope: SUBTREE
+    "object_filter": "(objectClass=groupOfUniqueNames)",
+    "members_attr": "uniqueMember", //name of the attribute to check if a user is a member of a group
     "attributes": null,
     "match": null, //filter groups by dn
-    "prop": "dn" //the attribute to represent this group
+    "prop": "ou" //the attribute to represent this group
   }
 }
