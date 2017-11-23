@@ -12,6 +12,8 @@ def phovea(registry):
   """
   # generator-phovea:begin
   registry.append('user_stores', 'phovea_security_store_ldap', 'phovea_security_store_ldap.ldap', {})
+
+  registry.append('command', 'ldap', 'phovea_security_store_ldap.ldap', {'factory': 'main'})
   # generator-phovea:end
   pass
 
