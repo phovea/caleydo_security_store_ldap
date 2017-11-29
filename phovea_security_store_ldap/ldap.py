@@ -15,6 +15,12 @@ def cleanup_name(username):
   return username
 
 
+def cleanup_group(group):
+  if (type(group) is list or type(group) is tuple) and len(group) == 1:
+    return group[0]
+  return unicode(group)
+
+
 class LDAPUser(phovea_server.security.User):
   """
   a simple unix user backend with the file permissions
@@ -25,7 +31,7 @@ class LDAPUser(phovea_server.security.User):
     self.name = cleanup_name(username)
     self.groups = groups or []
     if group_prop is not None:
-      self.roles = [g[group_prop] for g in self.groups]
+      self.roles = [cleanup_group(g[group_prop]) for g in self.groups]
     else:
       self.roles = self.groups
     self.dn = dn or username
