@@ -8,6 +8,7 @@
   ],
 
   /*server settings*/
+  /*http://www.forumsys.com/tutorials/integration-how-to/ldap/online-ldap-test-server*/
   "hostname": "ldap.forumsys.com",
   "port": 389,
   "use_ssl": false,
@@ -29,7 +30,7 @@
   //bind_guess_cn: the full cn is guessed and used to login and find ones groups
   //search: search the user and try out to login
   "method": "bind_guess_cn",
-  "cache": false,
+  "cache": true,
 
   //related to search fail if multiple found
   "fail_auth_on_multiple_found": false,
@@ -48,7 +49,7 @@
     "alternative_login_attr": null,
     "rdn_attr": "uid", //name of the attribure for the guessing the fully cn
     "attributes": null, //limit the number of attributes
-    "required_groups": [] //groups the user has to be part of
+    "required_groups": ["scientists"] //groups the user has to be part of
   },
   "group": {
     "search_scope": "SUBTREE", //search scope: SUBTREE
