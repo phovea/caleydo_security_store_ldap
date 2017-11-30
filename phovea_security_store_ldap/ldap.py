@@ -144,6 +144,10 @@ class LDAPStore(object):
       # so we can try bind with their password.
       result = self._authenticate_search_bind(username, password)
 
+    if result and self._config.user.required_groups and not all(result.has_role(r) for r in self._config.user.required_groups):
+      log.info('successful login for %s but not in required groups %s', result.name, self._config.user.required_groups)
+      return None
+
     if result and self._config.cache:
       self._cache[result.id] = result
     return result

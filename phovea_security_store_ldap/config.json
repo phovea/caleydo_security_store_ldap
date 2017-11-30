@@ -47,7 +47,8 @@
     "login_attr": "dn", //name of the attribute for the username
     "alternative_login_attr": null,
     "rdn_attr": "dn", //name of the attribure for the guessing the fully cn
-    "attributes": null //limit the number of attributes
+    "attributes": null, //limit the number of attributes
+    "required_groups": [] //groups the user has to be part of
   },
   "group": {
     "search_scope": "LEVEL", //search scope: SUBTREE
