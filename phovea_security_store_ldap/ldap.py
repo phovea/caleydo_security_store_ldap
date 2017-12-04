@@ -215,7 +215,7 @@ class LDAPStore(object):
       user_groups = self._get_user_groups(dn=bind_user, _connection=connection)
 
       return LDAPUser(username, info=user_info, groups=user_groups, dn=bind_user,
-                      group_prop=self._config.get('group.prop', default='dn'))
+                      group_prop=self._config.get('group.prop'))
     except LDAPInvalidCredentialsResult:
       log.debug('Authentication was not successful for user "{0}"'.format(username))
       return None
@@ -293,7 +293,7 @@ class LDAPStore(object):
         user_groups = self._get_user_groups(dn=bind_user, _connection=connection)
 
       return LDAPUser(my_username, info=user_info, groups=user_groups, dn=bind_user,
-                      group_prop=self._config.get('group.prop', default='dn'))
+                      group_prop=self._config.get('group.prop'))
     except LDAPInvalidCredentialsResult:
       log.exception('Authentication was not successful for user "{0}"'.format(username))
       return None
@@ -362,7 +362,7 @@ class LDAPStore(object):
           user['attributes']['dn'] = user['dn']
           groups = self._get_user_groups(dn=user['dn'], _connection=connection)
           user_obj = LDAPUser(username, dn=user['dn'], info=user['attributes'], groups=groups,
-                              group_prop=self._config.get('group.prop', default='dn'))
+                              group_prop=self._config.get('group.prop'))
           break
         except LDAPInvalidCredentialsResult:
           log.exception('Authentication was not successful for user "{0}"'.format(username))
