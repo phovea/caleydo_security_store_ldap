@@ -1,7 +1,7 @@
-import phovea_server.security
-import ldap3
-from ldap3.core.exceptions import LDAPInvalidCredentialsResult
 import logging
+import ldap3
+import phovea_server.security
+from ldap3.core.exceptions import LDAPInvalidCredentialsResult
 
 __author__ = 'Samuel Gratzl'
 log = None
@@ -422,12 +422,17 @@ class LDAPStore(object):
               ', base "{1}" and scope "{2}"'.format(search_filter, group_search_dn or self.full_group_search_dn,
                                                     self._config.get('group.search_scope')))
 
-    connection.search(search_base=group_search_dn or self.full_group_search_dn, search_filter=search_filter,
-                      attributes=self._config.get('group.attributes') or ldap3.ALL_ATTRIBUTES,
-                      search_scope=getattr(ldap3, self._config.get('group.search_scope')))
+    # use paged_search to avoid artificial cut off
+    s = connection.extend.standard
+    item_gen = s.paged_search(search_base=group_search_dn or self.full_group_search_dn,
+                              search_filter=search_filter,
+                              attributes=self._config.get('group.attributes') or ldap3.ALL_ATTRIBUTES,
+                              search_scope=getattr(ldap3, self._config.get('group.search_scope')),
+                              paged_size=16,
+                              generator=True)
 
     results = []
-    for item in connection.response:
+    for item in item_gen:
       group_data = item['attributes']
       group_data['dn'] = item['dn']
       results.append(group_data)
