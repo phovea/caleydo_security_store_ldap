@@ -56,6 +56,7 @@
     "members_attr": "member", //name of the attribute to check if a user is a member of a group
     "attributes": null,
     "match": null, //filter groups by dn
+    "filter_manually": false,
     "prop": "dn" //the attribute to represent this group
   }
 }

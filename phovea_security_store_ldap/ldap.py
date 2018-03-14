@@ -415,15 +415,20 @@ class LDAPStore(object):
                                          bind_password=self._config.get('bind_user_password'))
       connection.bind()
 
-    search_filter = '(&{0}({1}={2}))'.format(self._config.get('group.object_filter'),
-                                             self._config.get('group.members_attr'), dn)
+    # use paged_search to avoid artificial cut off
+    s = connection.extend.standard
+
+    filter_manually = self._config.get('group.filter_manually')
+    if filter_manually:
+      search_filter = self._config.get('group.object_filter')
+    else:
+      search_filter = '(&{0}({1}={2}))'.format(self._config.get('group.object_filter'),
+                                               self._config.get('group.members_attr'), dn)
 
     log.debug('Searching for groups for specific user with filter "{0}" '
               ', base "{1}" and scope "{2}"'.format(search_filter, group_search_dn or self.full_group_search_dn,
                                                     self._config.get('group.search_scope')))
 
-    # use paged_search to avoid artificial cut off
-    s = connection.extend.standard
     item_gen = s.paged_search(search_base=group_search_dn or self.full_group_search_dn,
                               search_filter=search_filter,
                               attributes=self._config.get('group.attributes') or ldap3.ALL_ATTRIBUTES,
@@ -432,10 +437,13 @@ class LDAPStore(object):
                               generator=True)
 
     results = []
+
     for item in item_gen:
       group_data = item['attributes']
       group_data['dn'] = item['dn']
-      results.append(group_data)
+      print(item)
+      if not filter_manually or dn in item.get(self._config.get('group.members_attr'), []):
+        results.append(group_data)
 
     if not _connection:
       # We made a connection, so we need to kill it.
