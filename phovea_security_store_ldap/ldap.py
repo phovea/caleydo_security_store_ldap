@@ -441,8 +441,7 @@ class LDAPStore(object):
     for item in item_gen:
       group_data = item['attributes']
       group_data['dn'] = item['dn']
-      print(item)
-      if not filter_manually or dn in item.get(self._config.get('group.members_attr'), []):
+      if not filter_manually or dn in group_data.get(self._config.get('group.members_attr'), []):
         results.append(group_data)
 
     if not _connection:
