@@ -290,7 +290,7 @@ class LDAPStore(object):
       if len(connection.response) > 0 and 'memberOf' in connection.response[0]['attributes']:
         user_groups = connection.response[0]['attributes'].get('memberOf', [])
       else:
-        user_groups = self._get_user_groups(dn=bind_user, _connection=connection)
+        user_groups = self._get_user_groups(dn=bind_user, _connection=self._choose(connection))
 
       return LDAPUser(my_username, info=user_info, groups=user_groups, dn=bind_user,
                       group_prop=self._config.get('group.prop'))
@@ -360,7 +360,7 @@ class LDAPStore(object):
 
           # Populate User Data
           user['attributes']['dn'] = user['dn']
-          groups = self._get_user_groups(dn=user['dn'], _connection=connection)
+          groups = self._get_user_groups(dn=user['dn'], _connection=user_connection if self._config.get('resolve_objects') == 'user' else connection)
           user_obj = LDAPUser(username, dn=user['dn'], info=user['attributes'], groups=groups,
                               group_prop=self._config.get('group.prop'))
           break
@@ -384,14 +384,17 @@ class LDAPStore(object):
       connection.bind()
       log.debug('Successfully bound to LDAP as "{0}" '
                 'for search_bind method'.format(self._config.get('bind_user_nd') or 'Anonymous'))
-      infos = self._get_user_info(dn, _connection=connection)
-      groups = self._get_user_groups(dn, _connection=connection)
+      infos = self._get_user_info(dn, _connection=self._choose(connection))
+      groups = self._get_user_groups(dn, _connection=self._choose(connection))
       return LDAPUser(infos.get('name', infos.get('cn', dn)), dn=dn, info=infos, groups=groups, group_prop=self._config.get('group.prop', default='dn'))
     except:
       log.exception('unknown')
       return None
     finally:
       connection.unbind()
+
+  def _choose(self, connection):
+    return connection if self._config.get('resolve_objects') == 'user' else None
 
   def _get_user_groups(self, dn, group_search_dn=None, _connection=None):
     """
