@@ -212,7 +212,7 @@ class LDAPStore(object):
       # Get user info here.
 
       user_info = self._get_user_info(dn=bind_user, _connection=connection)
-      user_groups = self._get_user_groups(dn=bind_user, _connection=connection)
+      user_groups = self._get_user_groups(dn=bind_user, _connection=self._choose(connection))
 
       return LDAPUser(username, info=user_info, groups=user_groups, dn=bind_user,
                       group_prop=self._config.get('group.prop'))
