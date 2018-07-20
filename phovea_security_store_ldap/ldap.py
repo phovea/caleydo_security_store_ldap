@@ -1,7 +1,7 @@
-import phovea_server.security
-import ldap3
-from ldap3.core.exceptions import LDAPInvalidCredentialsResult
 import logging
+import ldap3
+import phovea_server.security
+from ldap3.core.exceptions import LDAPInvalidCredentialsResult
 
 __author__ = 'Samuel Gratzl'
 log = None
@@ -212,7 +212,7 @@ class LDAPStore(object):
       # Get user info here.
 
       user_info = self._get_user_info(dn=bind_user, _connection=connection)
-      user_groups = self._get_user_groups(dn=bind_user, _connection=connection)
+      user_groups = self._get_user_groups(dn=bind_user, _connection=self._choose(connection))
 
       return LDAPUser(username, info=user_info, groups=user_groups, dn=bind_user,
                       group_prop=self._config.get('group.prop'))
@@ -290,7 +290,7 @@ class LDAPStore(object):
       if len(connection.response) > 0 and 'memberOf' in connection.response[0]['attributes']:
         user_groups = connection.response[0]['attributes'].get('memberOf', [])
       else:
-        user_groups = self._get_user_groups(dn=bind_user, _connection=connection)
+        user_groups = self._get_user_groups(dn=bind_user, _connection=self._choose(connection))
 
       return LDAPUser(my_username, info=user_info, groups=user_groups, dn=bind_user,
                       group_prop=self._config.get('group.prop'))
@@ -360,7 +360,7 @@ class LDAPStore(object):
 
           # Populate User Data
           user['attributes']['dn'] = user['dn']
-          groups = self._get_user_groups(dn=user['dn'], _connection=connection)
+          groups = self._get_user_groups(dn=user['dn'], _connection=user_connection if self._config.get('resolve_objects') == 'user' else connection)
           user_obj = LDAPUser(username, dn=user['dn'], info=user['attributes'], groups=groups,
                               group_prop=self._config.get('group.prop'))
           break
@@ -384,14 +384,17 @@ class LDAPStore(object):
       connection.bind()
       log.debug('Successfully bound to LDAP as "{0}" '
                 'for search_bind method'.format(self._config.get('bind_user_nd') or 'Anonymous'))
-      infos = self._get_user_info(dn, _connection=connection)
-      groups = self._get_user_groups(dn, _connection=connection)
+      infos = self._get_user_info(dn, _connection=self._choose(connection))
+      groups = self._get_user_groups(dn, _connection=self._choose(connection))
       return LDAPUser(infos.get('name', infos.get('cn', dn)), dn=dn, info=infos, groups=groups, group_prop=self._config.get('group.prop', default='dn'))
     except:
       log.exception('unknown')
       return None
     finally:
       connection.unbind()
+
+  def _choose(self, connection):
+    return connection if self._config.get('resolve_objects') == 'user' else None
 
   def _get_user_groups(self, dn, group_search_dn=None, _connection=None):
     """
@@ -415,22 +418,34 @@ class LDAPStore(object):
                                          bind_password=self._config.get('bind_user_password'))
       connection.bind()
 
-    search_filter = '(&{0}({1}={2}))'.format(self._config.get('group.object_filter'),
-                                             self._config.get('group.members_attr'), dn)
+    # use paged_search to avoid artificial cut off
+    s = connection.extend.standard
+
+    filter_manually = self._config.get('group.filter_manually')
+    if filter_manually:
+      search_filter = self._config.get('group.object_filter')
+    else:
+      search_filter = '(&{0}({1}={2}))'.format(self._config.get('group.object_filter'),
+                                               self._config.get('group.members_attr'), dn)
 
     log.debug('Searching for groups for specific user with filter "{0}" '
               ', base "{1}" and scope "{2}"'.format(search_filter, group_search_dn or self.full_group_search_dn,
                                                     self._config.get('group.search_scope')))
 
-    connection.search(search_base=group_search_dn or self.full_group_search_dn, search_filter=search_filter,
-                      attributes=self._config.get('group.attributes') or ldap3.ALL_ATTRIBUTES,
-                      search_scope=getattr(ldap3, self._config.get('group.search_scope')))
+    item_gen = s.paged_search(search_base=group_search_dn or self.full_group_search_dn,
+                              search_filter=search_filter,
+                              attributes=self._config.get('group.attributes') or ldap3.ALL_ATTRIBUTES,
+                              search_scope=getattr(ldap3, self._config.get('group.search_scope')),
+                              paged_size=16,
+                              generator=True)
 
     results = []
-    for item in connection.response:
+
+    for item in item_gen:
       group_data = item['attributes']
       group_data['dn'] = item['dn']
-      results.append(group_data)
+      if not filter_manually or dn in group_data.get(self._config.get('group.members_attr'), []):
+        results.append(group_data)
 
     if not _connection:
       # We made a connection, so we need to kill it.

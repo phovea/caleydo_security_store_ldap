@@ -39,6 +39,7 @@
   "base_dn": "",
   "user_dn": "",
   "group_dn": "",
+  "resolve_objects": "user", /* resolve objects via the bound user "user" or the generic login "generic"*/
 
   /*Ldap Filters*/
   "user": {
@@ -56,6 +57,7 @@
     "members_attr": "member", //name of the attribute to check if a user is a member of a group
     "attributes": null,
     "match": null, //filter groups by dn
+    "filter_manually": false, // filter groups by searching for them
     "prop": "dn" //the attribute to represent this group
   }
 }
