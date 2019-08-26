@@ -17,12 +17,13 @@
     "dist": "python setup.py sdist bdist_wheel",
     "docs": "sphinx-apidoc -o docs -f ./phovea_security_store_ldap && sphinx-build ./docs build/docs",
     "prebuild": "node -e \"process.exit(process.env.PHOVEA_SKIP_TESTS === undefined?1:0)\" || npm run test",
-    "build": "rm -rf build/source && find . -name '*.pyc' -delete && node buildPython.js && cp -r ./phovea_security_store_ldap build/source/"
+    "build": "rm -rf build/source && find . -name '*.pyc' -delete && node buildPython.js && cp -r ./phovea_security_store_ldap build/source/",
+    "publish": "twine upload --repository-url https://upload.pypi.org/legacy/ dist/*"
   },
   "name": "phovea_security_store_ldap",
   "description": "Security store implementation based LDAP",
   "homepage": "https://phovea.caleydo.org",
-  "version": "2.1.1-SNAPSHOT",
+  "version": "2.2.0",
   "author": {
     "name": "The Caleydo Team",
     "email": "contact@caleydo.org",
