@@ -179,7 +179,7 @@ class LDAPStore(object):
     except LDAPInvalidCredentialsResult:
       log.debug('Authentication was not successful for user "{0}"'.format(username))
       return None
-    except:
+    except Exception:
       log.exception('unknown exception')
       return None
     finally:
@@ -219,7 +219,7 @@ class LDAPStore(object):
     except LDAPInvalidCredentialsResult:
       log.debug('Authentication was not successful for user "{0}"'.format(username))
       return None
-    except:
+    except Exception:
       log.exception('unknown exception')
       return None
     finally:
@@ -297,7 +297,7 @@ class LDAPStore(object):
     except LDAPInvalidCredentialsResult:
       log.exception('Authentication was not successful for user "{0}"'.format(username))
       return None
-    except:
+    except Exception:
       log.exception('Cannot find user "{0}" full dn'.format(username))
       return None
     finally:
@@ -326,7 +326,7 @@ class LDAPStore(object):
       connection.bind()
       log.debug('Successfully bound to LDAP as "{0}"'
                 ' for search_bind method'.format(self._config.get('bind_user_nd') or 'Anonymous'))
-    except:
+    except Exception:
       connection.unbind()
       log.exception('unknown')
       return None
@@ -366,7 +366,7 @@ class LDAPStore(object):
           break
         except LDAPInvalidCredentialsResult:
           log.exception('Authentication was not successful for user "{0}"'.format(username))
-        except:  # pragma: no cover
+        except Exception:  # pragma: no cover
           # This should never happen, however in case ldap3 does ever throw an error here,
           # we catch it and log it
           log.exception('unknown')
@@ -387,7 +387,7 @@ class LDAPStore(object):
       infos = self._get_user_info(dn, _connection=self._choose(connection))
       groups = self._get_user_groups(dn, _connection=self._choose(connection))
       return LDAPUser(infos.get('name', infos.get('cn', dn)), dn=dn, info=infos, groups=groups, group_prop=self._config.get('group.prop', default='dn'))
-    except:
+    except Exception:
       log.exception('unknown')
       return None
     finally:
