@@ -17,8 +17,8 @@ def cleanup_name(username):
 
 def cleanup_group(group):
   if (type(group) is list or type(group) is tuple) and len(group) == 1:
-    return unicode(group[0])
-  return unicode(group)
+    return str(group[0])
+  return str(group)
 
 
 class LDAPUser(phovea_server.security.User):
@@ -33,7 +33,7 @@ class LDAPUser(phovea_server.security.User):
     if group_prop is not None:
       self.roles = [cleanup_group(g[group_prop]) for g in self.groups]
     else:
-      self.roles = [unicode(g) for g in self.groups]
+      self.roles = [str(g) for g in self.groups]
     self.dn = dn or username
     self.info = info or {}
 
@@ -145,7 +145,7 @@ class LDAPStore(object):
       result = self._authenticate_search_bind(username, password)
 
     if result and self._config.user['required_groups'] and not all(result.has_role(r) for r in self._config.user['required_groups']):
-      log.info('successful login for %s %s but not in required groups %s', result.name, unicode(result.roles), self._config.user['required_groups'])
+      log.info('successful login for %s %s but not in required groups %s', result.name, str(result.roles), self._config.user['required_groups'])
       return None
 
     if result and self._config.cache:
