@@ -89,7 +89,7 @@ class LDAPStore(object):
       # prepend default domain if available
       if '\\' not in bind_user and '@' not in bind_user and self._config.default_netbios_domain != '':
         bind_user = self._config.default_netbios_domain + '\\' + bind_user
-      authentication = getattr(ldap3, self._config.bind_authentifcation_type)
+      authentication = getattr(ldap3, self._config.bind_authentification_type)
 
     log.debug('Opening connection with bind user "{0}"'.format(bind_user or 'Anonymous'))
     connection = ldap3.Connection(server=self._server_pool, read_only=self._config.read_only, user=bind_user,
