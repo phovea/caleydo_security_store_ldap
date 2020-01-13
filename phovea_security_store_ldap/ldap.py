@@ -17,8 +17,8 @@ def cleanup_name(username):
 
 def cleanup_group(group):
   if (type(group) is list or type(group) is tuple) and len(group) == 1:
-    return unicode(group[0])
-  return unicode(group)
+    return str(group[0])
+  return str(group)
 
 
 class LDAPUser(phovea_server.security.User):
@@ -33,7 +33,7 @@ class LDAPUser(phovea_server.security.User):
     if group_prop is not None:
       self.roles = [cleanup_group(g[group_prop]) for g in self.groups]
     else:
-      self.roles = [unicode(g) for g in self.groups]
+      self.roles = [str(g) for g in self.groups]
     self.dn = dn or username
     self.info = info or {}
 
@@ -145,7 +145,7 @@ class LDAPStore(object):
       result = self._authenticate_search_bind(username, password)
 
     if result and self._config.user['required_groups'] and not all(result.has_role(r) for r in self._config.user['required_groups']):
-      log.info('successful login for %s %s but not in required groups %s', result.name, unicode(result.roles), self._config.user['required_groups'])
+      log.info('successful login for %s %s but not in required groups %s', result.name, str(result.roles), self._config.user['required_groups'])
       return None
 
     if result and self._config.cache:
@@ -179,7 +179,7 @@ class LDAPStore(object):
     except LDAPInvalidCredentialsResult:
       log.debug('Authentication was not successful for user "{0}"'.format(username))
       return None
-    except:
+    except Exception:
       log.exception('unknown exception')
       return None
     finally:
@@ -219,7 +219,7 @@ class LDAPStore(object):
     except LDAPInvalidCredentialsResult:
       log.debug('Authentication was not successful for user "{0}"'.format(username))
       return None
-    except:
+    except Exception:
       log.exception('unknown exception')
       return None
     finally:
@@ -251,7 +251,7 @@ class LDAPStore(object):
       if self._config.get('use_who_am_i'):
         # Luckily there's an LDAP standard operation to help us out
         my_username = connection.extend.standard.who_am_i()
-        my_username = re.sub('^u:\w+\\\\', '', my_username)
+        my_username = re.sub(r'^u:\w+\\\\', '', my_username)
         log.debug('re.sub: %r', my_username)
       else:
         my_username = username
@@ -297,7 +297,7 @@ class LDAPStore(object):
     except LDAPInvalidCredentialsResult:
       log.exception('Authentication was not successful for user "{0}"'.format(username))
       return None
-    except:
+    except Exception:
       log.exception('Cannot find user "{0}" full dn'.format(username))
       return None
     finally:
@@ -326,7 +326,7 @@ class LDAPStore(object):
       connection.bind()
       log.debug('Successfully bound to LDAP as "{0}"'
                 ' for search_bind method'.format(self._config.get('bind_user_nd') or 'Anonymous'))
-    except:
+    except Exception:
       connection.unbind()
       log.exception('unknown')
       return None
@@ -366,7 +366,7 @@ class LDAPStore(object):
           break
         except LDAPInvalidCredentialsResult:
           log.exception('Authentication was not successful for user "{0}"'.format(username))
-        except:  # pragma: no cover
+        except Exception:  # pragma: no cover
           # This should never happen, however in case ldap3 does ever throw an error here,
           # we catch it and log it
           log.exception('unknown')
@@ -387,7 +387,7 @@ class LDAPStore(object):
       infos = self._get_user_info(dn, _connection=self._choose(connection))
       groups = self._get_user_groups(dn, _connection=self._choose(connection))
       return LDAPUser(infos.get('name', infos.get('cn', dn)), dn=dn, info=infos, groups=groups, group_prop=self._config.get('group.prop', default='dn'))
-    except:
+    except Exception:
       log.exception('unknown')
       return None
     finally:
