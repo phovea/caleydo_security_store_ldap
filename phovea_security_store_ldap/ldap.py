@@ -455,7 +455,7 @@ class LDAPStore(object):
     if match is not None:
       import re
       match = re.compile(match)
-      results = [r for r in results if match.match(r['dn'])]
+      results = [r for r in list(results) if match.match(r['dn'])]
 
     return results
 
