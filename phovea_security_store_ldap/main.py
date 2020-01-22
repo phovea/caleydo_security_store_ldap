@@ -6,7 +6,7 @@ def create(_):
 
     log.setLevel(logging.DEBUG)
     store = LDAPStore()
-    username = input('username: ')
+    username = eval(input('username: '))
 
     while username:
       password = getpass.getpass('password: ')
@@ -15,6 +15,6 @@ def create(_):
         print(('OK {u.id} name:{u.name} roles:{u.roles} dn:{u.dn} {u.info} {u.groups}'.format(u=user)))
       else:
         print('ERROR')
-      username = input('another username: ')
+      username = eval(input('another username: '))
 
   return lambda _: _loop
