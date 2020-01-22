@@ -326,7 +326,7 @@ class LDAPStore(object):
     try:
       connection.bind()
       log.debug('Successfully bound to LDAP as "{0}"'
-                ' for search_bind method'.format(self._config.get('bind_user_nd') or 'Anonymous'))
+                ' for search_bind method'.format(self._config.get('bind_user_dn') or 'Anonymous'))
     except Exception:
       connection.unbind()
       log.exception('unknown')
@@ -384,7 +384,7 @@ class LDAPStore(object):
     try:
       connection.bind()
       log.debug('Successfully bound to LDAP as "{0}" '
-                'for search_bind method'.format(self._config.get('bind_user_nd') or 'Anonymous'))
+                'for search_bind method'.format(self._config.get('bind_user_dn') or 'Anonymous'))
       infos = self._get_user_info(dn, _connection=self._choose(connection))
       groups = self._get_user_groups(dn, _connection=self._choose(connection))
       return LDAPUser(infos.get('name', infos.get('cn', dn)), dn=dn, info=infos, groups=groups, group_prop=self._config.get('group.prop', default='dn'))
@@ -537,7 +537,7 @@ class LDAPStore(object):
 
     connection = _connection
     if not connection:
-      connection = self._make_connection(bind_user=self._config.get('bind_user_nd'),
+      connection = self._make_connection(bind_user=self._config.get('bind_user_dn'),
                                          bind_password=self._config.get('bind_user_password')
                                          )
       connection.bind()
