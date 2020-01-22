@@ -8,15 +8,15 @@
   ],
 
   /*server settings*/
-  "hostname": "",
+  "hostname": "172.21.0.6",
   "port": 389,
   "use_ssl": false,
   "read_only": true,
 
  /*user name to login/bind at connection*/
-  "bind_user_dn": null,
+  "bind_user_dn": "admin",
   /*password to login/bind at connection*/
-  "bind_user_password": null,
+  "bind_user_password": "mysecretpassword",
   /*authentification type see LDAP3 connection authentification*/
   "bind_authentification_type": "SIMPLE",
   /**default netbios domain*/
@@ -36,10 +36,10 @@
 
   /*Prepended to the Base DN to limit scope when searching for Users/Groups.*/
    /*default prefix for binding user*/
-  "base_dn": "",
-  "user_dn": "",
+  "base_dn": "dc=ldap,dc=example,dc=org",
+  "user_dn": "cn=admin,dc=ldap,dc=example,dc=org",
   "group_dn": "",
-  "resolve_objects": "user", /* resolve objects via the bound user "user" or the generic login "generic"*/
+  "resolve_objects": "generic", /* resolve objects via the bound user "user" or the generic login "generic"*/
 
   /*Ldap Filters*/
   "user": {
