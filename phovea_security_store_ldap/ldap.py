@@ -240,6 +240,7 @@ class LDAPStore(object):
         AuthenticationResponse
     """
     import re
+    import json
 
     connection = self._make_connection(username, password)
 
@@ -281,14 +282,14 @@ class LDAPStore(object):
                         attributes=self._config.get('user.attributes') or ldap3.ALL_ATTRIBUTES)
 
       if len(connection.response) > 0:
-        user_info = connection.response[0]['attributes']
+        user_info = json.loads(connection.response_to_json())["entries"][0]["attributes"]
         user_info['dn'] = connection.response[0]['dn']
         bind_user = user_info['dn']
       else:
         raise Exception
 
-      if len(connection.response) > 0 and 'memberOf' in connection.response[0]['attributes']:
-        user_groups = connection.response[0]['attributes'].get('memberOf', [])
+      if len(connection.response) > 0 and 'memberOf' in json.loads(connection.response_to_json())["entries"][0]["attributes"]:
+        user_groups = json.loads(connection.response_to_json())["entries"][0]["attributes"].get('memberOf', [])
       else:
         user_groups = self._get_user_groups(dn=bind_user, _connection=self._choose(connection))
 
@@ -532,6 +533,7 @@ class LDAPStore(object):
     Returns:
         dict: A dictionary of the object info from LDAP
     """
+    import json
 
     connection = _connection
     if not connection:
@@ -544,7 +546,7 @@ class LDAPStore(object):
 
     data = None
     if len(connection.response) > 0:
-      data = connection.response[0]['attributes']
+      data = json.loads(connection.response_to_json())["entries"][0]['attributes']
       data['dn'] = connection.response[0]['dn']
 
     if not _connection:
