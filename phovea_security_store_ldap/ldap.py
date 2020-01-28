@@ -283,7 +283,7 @@ class LDAPStore(object):
 
       if len(connection.response) > 0:
         user_info = json.loads(connection.response_to_json())["entries"][0]["attributes"]
-        user_info['dn'] = connection.response[0]['dn']
+        user_info['dn'] = json.loads(connection.response_to_json())["entries"][0]['dn']
         bind_user = user_info['dn']
       else:
         raise Exception
@@ -547,7 +547,7 @@ class LDAPStore(object):
     data = None
     if len(connection.response) > 0:
       data = json.loads(connection.response_to_json())["entries"][0]['attributes']
-      data['dn'] = connection.response[0]['dn']
+      data['dn'] = json.loads(connection.response_to_json())["entries"][0]['dn']
 
     if not _connection:
       # We made a connection, so we need to kill it.
