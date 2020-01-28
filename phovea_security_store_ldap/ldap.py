@@ -91,7 +91,7 @@ class LDAPStore(object):
         bind_user = self._config.default_netbios_domain + '\\' + bind_user
       authentication = getattr(ldap3, self._config.bind_authentification_type)
 
-    log.debug('Opening connection with bind user "{0}"'.format(bind_user or 'Anonymous'))
+    log.info('Opening connection with bind user "{0}"'.format(bind_user or 'Anonymous'))
     connection = ldap3.Connection(server=self._server_pool, read_only=self._config.read_only, user=bind_user,
                                   password=bind_password, client_strategy=ldap3.SYNC,
                                   authentication=authentication, check_names=True, raise_exceptions=True, **kwargs)
@@ -174,10 +174,10 @@ class LDAPStore(object):
 
     try:
       connection.bind()
-      log.debug('Authentication was successful for user "{0}"'.format(username))
+      log.info('Authentication was successful for user "{0}"'.format(username))
       return LDAPUser(username)
     except LDAPInvalidCredentialsResult:
-      log.debug('Authentication was not successful for user "{0}"'.format(username))
+      log.info('Authentication was not successful for user "{0}"'.format(username))
       return None
     except Exception:
       log.exception('unknown exception')
@@ -207,7 +207,7 @@ class LDAPStore(object):
 
     try:
       connection.bind()
-      log.debug('Authentication was successful for user "{0}"'.format(username))
+      log.info('Authentication was successful for user "{0}"'.format(username))
 
       # Get user info here.
 
@@ -217,7 +217,7 @@ class LDAPStore(object):
       return LDAPUser(username, info=user_info, groups=user_groups, dn=bind_user,
                       group_prop=self._config.get('group.prop'))
     except LDAPInvalidCredentialsResult:
-      log.debug('Authentication was not successful for user "{0}"'.format(username))
+      log.info('Authentication was not successful for user "{0}"'.format(username))
       return None
     except Exception:
       log.exception('unknown exception')
@@ -245,15 +245,15 @@ class LDAPStore(object):
     connection = self._make_connection(username, password)
 
     try:
-      log.debug('start binding')
+      log.info('start binding')
       connection.bind()
-      log.debug('Authentication was successful for user "{0}"'.format(username))
+      log.info('Authentication was successful for user "{0}"'.format(username))
 
       if self._config.get('use_who_am_i'):
         # Luckily there's an LDAP standard operation to help us out
         my_username = connection.extend.standard.who_am_i()
         my_username = re.sub(r'^u:\w+\\\\', '', my_username)
-        log.debug('re.sub: %r', my_username)
+        log.info('re.sub: %r', my_username)
       else:
         my_username = username
 
@@ -261,21 +261,19 @@ class LDAPStore(object):
       # Find the user in the search path.
       user_filter = '({search_attr}={username})'.format(search_attr=self._config.get('user.login_attr'),
                                                         username=my_username)
-      log.debug("user_filter(before): %r", user_filter)
+      log.info("user_filter(before): %r", user_filter)
 
       if self._config.get('user.alternative_login_attr') is not None:
         user_filter = '(|{first}({search_attr}={username}))'.format(first=user_filter, search_attr=self._config.get('user.alternative_login_attr'), username=my_username)
-        log.debug("user_filter(after): %r", user_filter)
+        log.info("user_filter(after): %r", user_filter)
 
       search_filter = '(&{0}{1})'.format(self._config.get('user.object_filter'), user_filter)
-      log.debug("search_filter: %r", search_filter)
+      log.info("search_filter: %r", search_filter)
 
       search_filter = '(&{0}{1})'.format(self._config.get('user.object_filter'), user_filter)
-      log.debug('search_filter: %r', search_filter)
+      log.info('search_filter: %r', search_filter)
 
-      log.debug('Performing an LDAP Search using filter "{0}", '
-                'base "{1}", and scope "{2}"'.format(search_filter, self.full_user_search_dn,
-                                                     self._config.get('user.search_scope')))
+      log.info('Performing an LDAP Search using filter "{0}", ''base "{1}", and scope "{2}"'.format(search_filter, self.full_user_search_dn, self._config.get('user.search_scope')))
 
       connection.search(search_base=self.full_user_search_dn, search_filter=search_filter,
                         search_scope=getattr(ldap3, self._config.get('user.search_scope')),
@@ -283,7 +281,7 @@ class LDAPStore(object):
 
       if len(connection.response) > 0:
         user_info = json.loads(connection.response_to_json())["entries"][0]["attributes"]
-        user_info['dn'] = connection.response[0]['dn']
+        user_info['dn'] = json.loads(connection.response_to_json())["entries"][0]['dn']
         bind_user = user_info['dn']
       else:
         raise Exception
@@ -325,8 +323,7 @@ class LDAPStore(object):
 
     try:
       connection.bind()
-      log.debug('Successfully bound to LDAP as "{0}"'
-                ' for search_bind method'.format(self._config.get('bind_user_dn') or 'Anonymous'))
+      log.info('Successfully bound to LDAP as "{0}" for search_bind method'.format(self._config.get('bind_user_dn') or 'Anonymous'))
     except Exception:
       connection.unbind()
       log.exception('unknown')
@@ -336,9 +333,7 @@ class LDAPStore(object):
     user_filter = '({0}={1})'.format(self._config.get('user.login_attr'), username)
     search_filter = '(&{0}{1})'.format(self._config.get('user.object_filter'), user_filter)
 
-    log.debug('Performing an LDAP Search using '
-              'filter "{0}", base "{1}", and scope "{2}"'.format(search_filter, self.full_user_search_dn,
-                                                                 self._config.get('user.search_scope')))
+    log.info('Performing an LDAP Search using filter "{0}", base "{1}", and scope "{2}"'.format(search_filter, self.full_user_search_dn, self._config.get('user.search_scope')))
 
     connection.search(search_base=self.full_user_search_dn, search_filter=search_filter,
                       search_scope=getattr(ldap3, self._config.get('user.search_scope')),
@@ -347,17 +342,17 @@ class LDAPStore(object):
     rlen = len(connection.response)
     if rlen == 0 or (self._config.get('fail_auth_on_multiple_found') and rlen > 1):
       # Don't allow them to log in.
-      log.debug('Authentication was not successful for user "{0}"'.format(username))
+      log.info('Authentication was not successful for user "{0}"'.format(username))
     else:
       for user in connection.response:
         # Attempt to bind with each user we find until we can find
         # one that works.
         user_connection = self._make_connection(bind_user=user['dn'], bind_password=password)
 
-        log.debug('Directly binding a connection to a server with user:"{0}"'.format(user['dn']))
+        log.info('Directly binding a connection to a server with user:"{0}"'.format(user['dn']))
         try:
           user_connection.bind()
-          log.debug('Authentication was successful for user "{0}"'.format(username))
+          log.info('Authentication was successful for user "{0}"'.format(username))
 
           # Populate User Data
           user['attributes']['dn'] = user['dn']
@@ -383,8 +378,7 @@ class LDAPStore(object):
 
     try:
       connection.bind()
-      log.debug('Successfully bound to LDAP as "{0}" '
-                'for search_bind method'.format(self._config.get('bind_user_dn') or 'Anonymous'))
+      log.info('Successfully bound to LDAP as "{0}" for search_bind method'.format(self._config.get('bind_user_dn') or 'Anonymous'))
       infos = self._get_user_info(dn, _connection=self._choose(connection))
       groups = self._get_user_groups(dn, _connection=self._choose(connection))
       return LDAPUser(infos.get('name', infos.get('cn', dn)), dn=dn, info=infos, groups=groups, group_prop=self._config.get('group.prop', default='dn'))
@@ -429,9 +423,7 @@ class LDAPStore(object):
       search_filter = '(&{0}({1}={2}))'.format(self._config.get('group.object_filter'),
                                                self._config.get('group.members_attr'), dn)
 
-    log.debug('Searching for groups for specific user with filter "{0}" '
-              ', base "{1}" and scope "{2}"'.format(search_filter, group_search_dn or self.full_group_search_dn,
-                                                    self._config.get('group.search_scope')))
+    log.info('Searching for groups for specific user with filter "{0}" , base "{1}" and scope "{2}"'.format(search_filter, group_search_dn or self.full_group_search_dn, self._config.get('group.search_scope')))
 
     item_gen = s.paged_search(search_base=group_search_dn or self.full_group_search_dn,
                               search_filter=search_filter,
@@ -547,7 +539,7 @@ class LDAPStore(object):
     data = None
     if len(connection.response) > 0:
       data = json.loads(connection.response_to_json())["entries"][0]['attributes']
-      data['dn'] = connection.response[0]['dn']
+      data['dn'] = json.loads(connection.response_to_json())["entries"][0]['dn']
 
     if not _connection:
       # We made a connection, so we need to kill it.
