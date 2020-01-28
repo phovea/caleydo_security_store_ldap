@@ -273,9 +273,7 @@ class LDAPStore(object):
       search_filter = '(&{0}{1})'.format(self._config.get('user.object_filter'), user_filter)
       log.info('search_filter: %r', search_filter)
 
-      log.info('Performing an LDAP Search using filter "{0}", '
-                'base "{1}", and scope "{2}"'.format(search_filter, self.full_user_search_dn,
-                                                     self._config.get('user.search_scope')))
+      log.info('Performing an LDAP Search using filter "{0}", ''base "{1}", and scope "{2}"'.format(search_filter, self.full_user_search_dn, self._config.get('user.search_scope')))
 
       connection.search(search_base=self.full_user_search_dn, search_filter=search_filter,
                         search_scope=getattr(ldap3, self._config.get('user.search_scope')),
@@ -325,8 +323,7 @@ class LDAPStore(object):
 
     try:
       connection.bind()
-      log.info('Successfully bound to LDAP as "{0}"'
-                ' for search_bind method'.format(self._config.get('bind_user_dn') or 'Anonymous'))
+      log.info('Successfully bound to LDAP as "{0}" for search_bind method'.format(self._config.get('bind_user_dn') or 'Anonymous'))
     except Exception:
       connection.unbind()
       log.exception('unknown')
@@ -336,9 +333,7 @@ class LDAPStore(object):
     user_filter = '({0}={1})'.format(self._config.get('user.login_attr'), username)
     search_filter = '(&{0}{1})'.format(self._config.get('user.object_filter'), user_filter)
 
-    log.info('Performing an LDAP Search using '
-              'filter "{0}", base "{1}", and scope "{2}"'.format(search_filter, self.full_user_search_dn,
-                                                                 self._config.get('user.search_scope')))
+    log.info('Performing an LDAP Search using filter "{0}", base "{1}", and scope "{2}"'.format(search_filter, self.full_user_search_dn, self._config.get('user.search_scope')))
 
     connection.search(search_base=self.full_user_search_dn, search_filter=search_filter,
                       search_scope=getattr(ldap3, self._config.get('user.search_scope')),
@@ -383,8 +378,7 @@ class LDAPStore(object):
 
     try:
       connection.bind()
-      log.info('Successfully bound to LDAP as "{0}" '
-                'for search_bind method'.format(self._config.get('bind_user_dn') or 'Anonymous'))
+      log.info('Successfully bound to LDAP as "{0}" for search_bind method'.format(self._config.get('bind_user_dn') or 'Anonymous'))
       infos = self._get_user_info(dn, _connection=self._choose(connection))
       groups = self._get_user_groups(dn, _connection=self._choose(connection))
       return LDAPUser(infos.get('name', infos.get('cn', dn)), dn=dn, info=infos, groups=groups, group_prop=self._config.get('group.prop', default='dn'))
@@ -429,9 +423,7 @@ class LDAPStore(object):
       search_filter = '(&{0}({1}={2}))'.format(self._config.get('group.object_filter'),
                                                self._config.get('group.members_attr'), dn)
 
-    log.info('Searching for groups for specific user with filter "{0}" '
-              ', base "{1}" and scope "{2}"'.format(search_filter, group_search_dn or self.full_group_search_dn,
-                                                    self._config.get('group.search_scope')))
+    log.info('Searching for groups for specific user with filter "{0}" , base "{1}" and scope "{2}"'.format(search_filter, group_search_dn or self.full_group_search_dn, self._config.get('group.search_scope')))
 
     item_gen = s.paged_search(search_base=group_search_dn or self.full_group_search_dn,
                               search_filter=search_filter,
