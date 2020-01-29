@@ -252,6 +252,7 @@ class LDAPStore(object):
       if self._config.get('use_who_am_i'):
         # Luckily there's an LDAP standard operation to help us out
         my_username = connection.extend.standard.who_am_i()
+        log.debug('who_am_i(): %r', my_username)
         my_username = re.sub('^u:\w+\\\\', '', my_username)
         log.info('re.sub: %r', my_username)
       else:
