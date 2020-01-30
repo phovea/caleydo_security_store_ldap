@@ -145,7 +145,7 @@ class LDAPStore(object):
       result = self._authenticate_search_bind(username, password)
 
     if result and self._config.user['required_groups'] and not all(result.has_role(r) for r in self._config.user['required_groups']):
-      log.debug('successful login for %s %s but not in required groups %s', result.name, str(result.roles), self._config.user['required_groups'])
+      log.info('successful login for %s %s but not in required groups %s', result.name, str(result.roles), self._config.user['required_groups'])
       return None
 
     if result and self._config.cache:
