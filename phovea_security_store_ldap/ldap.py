@@ -410,7 +410,7 @@ class LDAPStore(object):
 
     connection = _connection
     if not connection:
-      connection = self._make_connection(bind_user=dn,
+      connection = self._make_connection(bind_user=self._config.get('bind_user_dn'),
                                          bind_password=self._config.get('bind_user_password'))
       connection.bind()
 
