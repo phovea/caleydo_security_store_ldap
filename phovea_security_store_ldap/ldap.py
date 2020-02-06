@@ -281,14 +281,15 @@ class LDAPStore(object):
                         attributes=self._config.get('user.attributes') or ldap3.ALL_ATTRIBUTES)
 
       if len(connection.response) > 0:
-        user_info = json.loads(connection.response_to_json())["entries"][0]["attributes"]
-        user_info['dn'] = json.loads(connection.response_to_json())["entries"][0]['dn']
+        first_entry = json.loads(connection.response_to_json())['entries'][0]
+        user_info = first_entry['attributes']
+        user_info['dn'] = first_entry['dn']
         bind_user = user_info['dn']
       else:
         raise Exception
 
-      if len(connection.response) > 0 and 'memberOf' in json.loads(connection.response_to_json())["entries"][0]["attributes"]:
-        user_groups = json.loads(connection.response_to_json())["entries"][0]["attributes"].get('memberOf', [])
+      if len(connection.response) > 0 and 'memberOf' in json.loads(connection.response_to_json())['entries'][0]['attributes']:
+        user_groups = json.loads(connection.response_to_json())['entries'][0]['attributes'].get('memberOf', [])
       else:
         user_groups = self._get_user_groups(dn=bind_user, _connection=self._choose(connection))
 
@@ -539,8 +540,9 @@ class LDAPStore(object):
 
     data = None
     if len(connection.response) > 0:
-      data = json.loads(connection.response_to_json())["entries"][0]['attributes']
-      data['dn'] = json.loads(connection.response_to_json())["entries"][0]['dn']
+      first_entry = json.loads(connection.response_to_json())['entries'][0]
+      data = first_entry['attributes']
+      data['dn'] = first_entry['dn']
 
     if not _connection:
       # We made a connection, so we need to kill it.
