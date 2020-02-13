@@ -240,6 +240,7 @@ class LDAPStore(object):
         AuthenticationResponse
     """
     import re
+    import json
 
     connection = self._make_connection(username, password)
 
@@ -251,7 +252,8 @@ class LDAPStore(object):
       if self._config.get('use_who_am_i'):
         # Luckily there's an LDAP standard operation to help us out
         my_username = connection.extend.standard.who_am_i()
-        my_username = re.sub(r'^u:\w+\\\\', '', my_username)
+        log.debug('who_am_i(): %r', my_username)
+        my_username = re.sub('^u:\w+\\\\', '', my_username)
         log.debug('re.sub: %r', my_username)
       else:
         my_username = username
@@ -272,23 +274,22 @@ class LDAPStore(object):
       search_filter = '(&{0}{1})'.format(self._config.get('user.object_filter'), user_filter)
       log.debug('search_filter: %r', search_filter)
 
-      log.debug('Performing an LDAP Search using filter "{0}", '
-                'base "{1}", and scope "{2}"'.format(search_filter, self.full_user_search_dn,
-                                                     self._config.get('user.search_scope')))
+      log.debug('Performing an LDAP Search using filter "{0}", ''base "{1}", and scope "{2}"'.format(search_filter, self.full_user_search_dn, self._config.get('user.search_scope')))
 
       connection.search(search_base=self.full_user_search_dn, search_filter=search_filter,
                         search_scope=getattr(ldap3, self._config.get('user.search_scope')),
                         attributes=self._config.get('user.attributes') or ldap3.ALL_ATTRIBUTES)
 
       if len(connection.response) > 0:
-        user_info = connection.response[0]['attributes']
-        user_info['dn'] = connection.response[0]['dn']
+        first_entry = json.loads(connection.response_to_json())['entries'][0]
+        user_info = first_entry['attributes']
+        user_info['dn'] = first_entry['dn']
         bind_user = user_info['dn']
       else:
         raise Exception
 
-      if len(connection.response) > 0 and 'memberOf' in connection.response[0]['attributes']:
-        user_groups = connection.response[0]['attributes'].get('memberOf', [])
+      if len(connection.response) > 0 and 'memberOf' in json.loads(connection.response_to_json())['entries'][0]['attributes']:
+        user_groups = json.loads(connection.response_to_json())['entries'][0]['attributes'].get('memberOf', [])
       else:
         user_groups = self._get_user_groups(dn=bind_user, _connection=self._choose(connection))
 
@@ -324,8 +325,7 @@ class LDAPStore(object):
 
     try:
       connection.bind()
-      log.debug('Successfully bound to LDAP as "{0}"'
-                ' for search_bind method'.format(self._config.get('bind_user_nd') or 'Anonymous'))
+      log.debug('Successfully bound to LDAP as "{0}" for search_bind method'.format(self._config.get('bind_user_dn') or 'Anonymous'))
     except Exception:
       connection.unbind()
       log.exception('unknown')
@@ -335,9 +335,7 @@ class LDAPStore(object):
     user_filter = '({0}={1})'.format(self._config.get('user.login_attr'), username)
     search_filter = '(&{0}{1})'.format(self._config.get('user.object_filter'), user_filter)
 
-    log.debug('Performing an LDAP Search using '
-              'filter "{0}", base "{1}", and scope "{2}"'.format(search_filter, self.full_user_search_dn,
-                                                                 self._config.get('user.search_scope')))
+    log.debug('Performing an LDAP Search using filter "{0}", base "{1}", and scope "{2}"'.format(search_filter, self.full_user_search_dn, self._config.get('user.search_scope')))
 
     connection.search(search_base=self.full_user_search_dn, search_filter=search_filter,
                       search_scope=getattr(ldap3, self._config.get('user.search_scope')),
@@ -382,8 +380,7 @@ class LDAPStore(object):
 
     try:
       connection.bind()
-      log.debug('Successfully bound to LDAP as "{0}" '
-                'for search_bind method'.format(self._config.get('bind_user_nd') or 'Anonymous'))
+      log.debug('Successfully bound to LDAP as "{0}" for search_bind method'.format(self._config.get('bind_user_dn') or 'Anonymous'))
       infos = self._get_user_info(dn, _connection=self._choose(connection))
       groups = self._get_user_groups(dn, _connection=self._choose(connection))
       return LDAPUser(infos.get('name', infos.get('cn', dn)), dn=dn, info=infos, groups=groups, group_prop=self._config.get('group.prop', default='dn'))
@@ -428,9 +425,7 @@ class LDAPStore(object):
       search_filter = '(&{0}({1}={2}))'.format(self._config.get('group.object_filter'),
                                                self._config.get('group.members_attr'), dn)
 
-    log.debug('Searching for groups for specific user with filter "{0}" '
-              ', base "{1}" and scope "{2}"'.format(search_filter, group_search_dn or self.full_group_search_dn,
-                                                    self._config.get('group.search_scope')))
+    log.debug('Searching for groups for specific user with filter "{0}" , base "{1}" and scope "{2}"'.format(search_filter, group_search_dn or self.full_group_search_dn, self._config.get('group.search_scope')))
 
     item_gen = s.paged_search(search_base=group_search_dn or self.full_group_search_dn,
                               search_filter=search_filter,
@@ -455,7 +450,7 @@ class LDAPStore(object):
     if match is not None:
       import re
       match = re.compile(match)
-      results = [r for r in results if match.match(r['dn'])]
+      results = [r for r in list(results) if match.match(r['dn'])]
 
     return results
 
@@ -532,10 +527,11 @@ class LDAPStore(object):
     Returns:
         dict: A dictionary of the object info from LDAP
     """
+    import json
 
     connection = _connection
     if not connection:
-      connection = self._make_connection(bind_user=self._config.get('bind_user_nd'),
+      connection = self._make_connection(bind_user=self._config.get('bind_user_dn'),
                                          bind_password=self._config.get('bind_user_password')
                                          )
       connection.bind()
@@ -544,8 +540,9 @@ class LDAPStore(object):
 
     data = None
     if len(connection.response) > 0:
-      data = connection.response[0]['attributes']
-      data['dn'] = connection.response[0]['dn']
+      first_entry = json.loads(connection.response_to_json())['entries'][0]
+      data = first_entry['attributes']
+      data['dn'] = first_entry['dn']
 
     if not _connection:
       # We made a connection, so we need to kill it.
