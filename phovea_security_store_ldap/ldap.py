@@ -253,7 +253,8 @@ class LDAPStore(object):
         # Luckily there's an LDAP standard operation to help us out
         my_username = connection.extend.standard.who_am_i()
         log.debug('who_am_i(): %r', my_username)
-        my_username = re.sub('^u:\w+\\\\', '', my_username)
+        # ignore ts lint error, the fix would break the login mechanism
+        my_username = re.sub('^u:\w+\\\\', '', my_username)  # noqa: W605
         log.debug('re.sub: %r', my_username)
       else:
         my_username = username
