@@ -38,7 +38,7 @@ This repository is part of **[Phovea](http://phovea.caleydo.org/)**, a platform 
 [phovea-url]: https://phovea.caleydo.org
 [npm-image]: https://badge.fury.io/js/phovea_security_store_ldap.svg
 [npm-url]: https://npmjs.org/package/phovea_security_store_ldap
-[travis-image]: https://travis-ci.org/phovea/phovea_security_store_ldap.svg?branch=master
-[travis-url]: https://travis-ci.org/phovea/phovea_security_store_ldap
+[circleci-image]: https://circleci.com/gh/phovea/phovea_security_store_ldap.svg?style=shield
+[circleci-url]: https://circleci.com/gh/phovea/phovea_security_store_ldap
 [daviddm-image]: https://david-dm.org/phovea/phovea_security_store_ldap/status.svg
 [daviddm-url]: https://david-dm.org/phovea/phovea_security_store_ldap
