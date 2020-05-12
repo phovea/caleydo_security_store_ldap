@@ -1,5 +1,7 @@
-phovea_security_store_ldap [![Phovea][phovea-image]][phovea-url] [![NPM version][npm-image]][npm-url] [![Build Status][travis-image]][travis-url] [![Dependency Status][daviddm-image]][daviddm-url]
+phovea_security_store_ldap  
 =====================
+[![Phovea][phovea-image]][phovea-url] [![Build Status][circleci-image]][circleci-url]  
+
 
 A security store based on LDAP lookups using the [ldap3 library](https://ldap3.readthedocs.io/).
 
@@ -36,9 +38,5 @@ This repository is part of **[Phovea](http://phovea.caleydo.org/)**, a platform 
 
 [phovea-image]: https://img.shields.io/badge/Phovea-Server%20Plugin-10ACDF.svg
 [phovea-url]: https://phovea.caleydo.org
-[npm-image]: https://badge.fury.io/js/phovea_security_store_ldap.svg
-[npm-url]: https://npmjs.org/package/phovea_security_store_ldap
 [circleci-image]: https://circleci.com/gh/phovea/phovea_security_store_ldap.svg?style=shield
 [circleci-url]: https://circleci.com/gh/phovea/phovea_security_store_ldap
-[daviddm-image]: https://david-dm.org/phovea/phovea_security_store_ldap/status.svg
-[daviddm-url]: https://david-dm.org/phovea/phovea_security_store_ldap
