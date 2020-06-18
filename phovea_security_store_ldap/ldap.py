@@ -127,6 +127,11 @@ class LDAPStore(object):
     return self.login(parts[0], dict(password=parts[1]))
 
   def login(self, username, extra_fields=None):
+    # Check if user is blacklisted
+    if username and username.lower() in self._config.get('blacklist', default=[]):
+      log.info(f'unsuccessful login for blacklisted user {username}')
+      return None
+
     if extra_fields is None:
       extra_fields = {}
     password = extra_fields['password']

@@ -7,6 +7,9 @@
     }
   ],
 
+  /*lowercase usernames which are denied access*/
+  "blacklist": [],
+
   /*server settings*/
   "hostname": "",
   "port": 389,
