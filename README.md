@@ -1,9 +1,12 @@
-phovea_security_store_ldap  
+DEPRECATED: phovea_security_store_ldap  
 =====================
 [![Phovea][phovea-image]][phovea-url] [![Build Status][circleci-image]][circleci-url]  
 
 
 A security store based on LDAP lookups using the [ldap3 library](https://ldap3.readthedocs.io/).
+
+### DEPRECATION Information
+Please note that this project has been archived and is no longer being maintained. There is an active development under https://github.com/datavisyn/tdp_core and we will also contribute our future changes to it.
 
 Installation
 ------------
